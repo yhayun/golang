@@ -1,0 +1,81 @@
+2017-10-31 12:05:36,039 | INFO  | main                           | properties                     | L122  | 			 ==================================================
+2017-10-31 12:05:36,039 | INFO  | main                           | properties                     | L123  | properties file is '.\FilterRegistry.properties'
+2017-10-31 12:05:36,055 | DEBUG | main                           | properties                     | L132  | Last modified date: Thu Jun 04 17:35:45 IDT 2015
+2017-10-31 12:05:36,055 | INFO  | main                           | properties                     | L309  | Setting properties to the values written in file 'FilterRegistry.properties'
+2017-10-31 12:05:36,086 | INFO  | main                           | properties                     | L353  | FILTER_IDS                                    = '[Ljava.lang.String;@3d71d552'          <<<< Previous value was 'null'      
+2017-10-31 12:05:36,086 | INFO  | main                           | properties                     | L353  | FILTER_IMPLS                                  = '[Ljava.lang.String;@15327b79'          <<<< Previous value was 'null'      
+2017-10-31 12:05:36,086 | INFO  | main                           | properties                     | L369  | 			 ==================================================
+
+2017-10-31 12:05:36,180 | INFO  | main                           | UDPSink                        | L285  | It seems that system properties 'PRIVATE_NETWORK' and 'PUBLIC_NETWORK' have not been set properly
+2017-10-31 12:05:36,180 | INFO  | main                           | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:05:36,180 | INFO  | main                           | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:05:36,180 | INFO  | main                           | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:05:36,195 | INFO  | main                           | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:05:36,195 | INFO  | CMSFileSource_PullRunnable     | CMSFileSource                  | L122  | after prefetchOffset
+2017-10-31 12:05:36,267 | INFO  | CMSFileSource_PullRunnable     | CMSFileSource                  | L106  | after prefetchData
+2017-10-31 12:05:36,601 | INFO  | CMSFileSource_PullRunnable     | CMSFileSource                  | L122  | after prefetchOffset
+2017-10-31 12:05:36,726 | INFO  | CMSFileSource_PullRunnable     | CMSFileSource                  | L106  | after prefetchData
+2017-10-31 12:05:37,009 | INFO  | CMSFileSource_PullRunnable     | CMSFileSource                  | L122  | after prefetchOffset
+2017-10-31 12:07:49,418 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:07:49,423 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:07:49,423 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:07:49,428 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:07:49,428 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:07:49,428 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:07:49,433 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:07:49,433 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:07:49,433 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:10:02,656 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:10:02,661 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:10:02,661 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:10:02,661 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:10:02,666 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:10:02,666 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:10:02,666 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:10:02,666 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:10:02,666 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:12:15,889 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:12:15,894 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:12:15,894 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:12:15,899 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:14:29,122 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:14:29,127 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:14:29,127 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:14:29,132 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:16:42,355 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:16:42,360 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:16:42,360 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:16:42,365 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:18:55,588 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:18:55,593 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:18:55,593 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:18:55,598 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:21:08,821 | INFO  | eSource_SourceDeliveryRunnable | UDPSink                        | L102  | EOM posting event
+2017-10-31 12:21:08,826 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:21:08,826 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L315  | After offsetFile.seek(offset)
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L319  | After prefetchOffset()
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L325  | After dataFile.seek(pi.getPacketOffset())
+2017-10-31 12:21:08,831 | INFO  | EventManager_EventReporter     | CMSFileSource                  | L329  | After prefetchData()
