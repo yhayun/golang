@@ -1,26 +1,25 @@
 package main
 
-import (
-	//"fmt",
-)
-
 type frame struct {
 	pts uint64
 	offset int
 	data []byte
 }
 
-//func (c Creature) Dump() {
-//	fmt.Printf("Name: '%s', Real: %t\n", c.Name, c.Real)
-//}
-
+//CONSTRUCTOR:
+func NewFrame(capacity int) *frame {
+	return &frame{
+		offset: 0,
+		data: make([]byte,capacity),
+	}
+}
 
 
 /**
  * @return A reference to the underlying byte array.
  */
  func (f frame) getData() []byte {
- 	return f.data;
+ 	return f.data
  }
 
 /**
@@ -42,7 +41,7 @@ func ( f frame) clear() {
  */
  func (f frame) append (buf []byte, offset int ,limit int ) {
 	for i:= 0; i < limit && f.offset < len(f.data); i++ {
-		f.data[f.offset] = buf[offset + i];
+		f.data[f.offset] = buf[offset + i]
 		f.offset++
 	 }
  }
