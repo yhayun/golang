@@ -8,14 +8,13 @@ import (
 )
 
 // todo - remove. this is just for syntax errors ::
-func (non Mpeg2TSPacket) getContinuityCounter () int {return 0}
-func (non Mpeg2TSPacket) isPayloadExist () bool {return true}
-func (non Mpeg2TSPacket) isStartOfPES () bool {return true}
-func (non Mpeg2TSPacket) getPTS () int64 {return 0}
-
-func (non Mpeg2TSPacket) getData () []byte {return nil}
-func (non Mpeg2TSPacket) getPayloadOffset () int {return 0}
-func (non Mpeg2TSPacket) getPayloadLength () int {return 0}
+//func (non Mpeg2TSPacket) getContinuityCounter () int {return 0}
+//func (non Mpeg2TSPacket) isPayloadExist () bool {return true}
+//func (non Mpeg2TSPacket) isStartOfPES () bool {return true}
+//func (non Mpeg2TSPacket) getPTS () int64 {return 0}
+//func (non Mpeg2TSPacket) getData () []byte {return nil}
+//func (non Mpeg2TSPacket) getPayloadOffset () int {return 0}
+//func (non Mpeg2TSPacket) getPayloadLength () int {return 0}
 // todo - end of list.
 
 const MAX_COUNTER = 16
