@@ -152,6 +152,14 @@ func isStart(tsPacket []byte, offset int) bool {
 	return (tsPacket[1 + offset] & 0x40) != 0;
 }
 
+func (tsP* Mpeg2TSPacket) getType() int {
+	return tsP.Mpeg2TSPacketType;
+}
+
+func (tsP* Mpeg2TSPacket) getData() []byte {
+	return tsP.data;
+}
+
 func getPMTLength(buffer []byte, offset int) int{
 	var tsDataOffset int = tsDataOffset(buffer, offset) + 2
 	var pmtSectionLength int = (int)((buffer[tsDataOffset] & 0xf) << 8) + (int)(buffer[1+tsDataOffset])
