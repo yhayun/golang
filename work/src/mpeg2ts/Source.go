@@ -8,6 +8,10 @@ import (
 const UDP_SIZE = 1500
 const MPEG2TS_PACKET_LENGTH = 188
 
+func timeMilisecs() int64 {
+	return time.Now().UnixNano()%1e6/1e3
+}
+
 //server code:   //extractstrean() code
 func main() {
 	addr, _ := net.ResolveUDPAddr("udp", ":8888")
@@ -36,6 +40,7 @@ type  Mpeg2TSource struct {
 	endFlag bool //= false;
 	detectFlag bool //= false;
 	previousTime int64 // = -1
+	pmtFrame PMTFrame //
 }
 
 
@@ -43,7 +48,9 @@ type  Mpeg2TSource struct {
 func (src Mpeg2TSource) extractStream(packet []byte) {
 	for offset:=0; offset < len(packet); offset += MPEG2TS_PACKET_LENGTH {
 		src.tsPacket.fromBytes(packet,offset, src.programPID)
-		//if(src.detectFlag && ((System.currentTimeMillis() - src.previousTime) > 1000)) {
+		if src.detectFlag && (timeMilisecs() - src.previousTime) > 1000 {
+			fmt.Println("Timeout detected, now looking for new PID")
+			src.programPID = 0
 
 
 
