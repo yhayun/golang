@@ -4,15 +4,22 @@ import (
 	"container/list"
 )
 
-type long uint64
+type long int64
+type short int16
 const TRANSPORT_PACKET_SIZE int = 188
 const MAX_CONTINUITY_COUNTER int = 16
-
+const Mpeg2TSPacketType_PAT int  = 0
+const Mpeg2TSPacketType_PMT int  = 1
+const Mpeg2TSPacketType_PES int  = 2
+const VideoFrameType_I_START = 0
+const VideoFrameType_P_START = 1
+const VideoFrameType_OTHER = 2
 type Mpeg2TSPacket struct {
 	data []byte
 	offset int
 	valid bool
 	Mpeg2TSPacketType int // Mpeg2TSPacketType PAT = 0, PMT =1, PES = 2 for now.. TODO define the enum correctl
+	VideoFrameType int // I_START = 0, P_START = 1, OTHER = 2
 	pid int
 	continuityCounter int
 	dataOffset int
@@ -32,6 +39,10 @@ type Mpeg2TSPacket struct {
 	pmtLength int
 	start bool
 	receiveTime long
+}
+
+func (tsP* Mpeg2TSPacket) isStartOfPES() bool{
+	return tsP.startOfPES;
 }
 
 func validMpegTsPacket(data []byte, offset int) bool{
@@ -169,22 +180,64 @@ func getPayloadOffset(buffer []byte, offset int) int{
 }
 
 
+
 func getPTS(buffer []byte, offset int) long {
 
-var dataOffset int = tsDataOffset(buffer, offset);
+	var dataOffset int = tsDataOffset(buffer, offset);
 
-if ((buffer[7 + dataOffset] & 0x80) == 0) {
-return -1;
+	if ((buffer[7 + dataOffset] & 0x80) == 0) {
+	return -1;
+	}
+
+	var ptsOffset int= 9 + dataOffset;
+
+	var pts long;
+
+	pts = ((long) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30;
+	pts += ((long) (buffer[1 + ptsOffset] & 0xff) << 22);
+	pts += ((long) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15;
+	pts += ((long) (buffer[3 + ptsOffset] & 0xff) << 7);
+	pts += (long)((buffer[4 + ptsOffset] & 0xfe) >> 1);
+	return pts;
 }
 
-var ptsOffset int= 9 + dataOffset;
 
-var pts long;
+func (tsP* Mpeg2TSPacket) getH264type() int16 {
 
-pts = ((long) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30;
-pts += ((long) (buffer[1 + ptsOffset] & 0xff) << 22);
-pts += ((long) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15;
-pts += ((long) (buffer[3 + ptsOffset] & 0xff) << 7);
-pts += (long)((buffer[4 + ptsOffset] & 0xfe) >> 1);
-return pts;
+	var buffer []byte = tsP.data;
+
+	var startOffset int = tsDataOffset(buffer, tsP.offset) - tsP.offset;
+
+	// If start of PES, look for Sequence Parameter Set (SPS)
+	// If it was found then it is I frame / GOP start otherwise P frame
+	if (tsP.isStartOfPES()) {
+		for i := startOffset; i < (TRANSPORT_PACKET_SIZE - 5); i++ {
+			var j int= tsP.offset + i;
+			if (buffer[j] == 0) {
+				if (buffer[j + 1] == 0) {
+					if (buffer[j + 2] == 1) {
+						var val short= (short) (0x001f & buffer[j + 3]);
+						if (val == 7) {
+							return 0; // Start GOP was detected
+						}
+					}
+				}
+			}
+		}
+		return 1; // P frame was detected
+	}
+	return -1;
 }
+
+//todo increaseContinuityCounter()
+func (tsP* Mpeg2TSPacket) getH264VideoFrameType() int{
+	var _type int16 = tsP.getH264type();
+	if _type == 0 {
+		return VideoFrameType_I_START;
+	} else if (_type == 1) || (_type == 6) {
+		return VideoFrameType_P_START;
+	}
+return VideoFrameType_OTHER;
+
+}
+
