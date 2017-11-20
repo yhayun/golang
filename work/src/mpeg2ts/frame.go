@@ -1,7 +1,7 @@
 package main
 
 type frame struct {
-	pts uint64
+	pts int64
 	offset int
 	data []byte
 }
@@ -62,7 +62,7 @@ func ( f frame) clear() {
 /**
  * @return The PTS of the frame.
  */
- func (f frame) getPTS () uint64 {
+ func (f frame) getPTS () int64 {
  	return f.pts
  }
 
@@ -71,7 +71,7 @@ func ( f frame) clear() {
  * @param pts
  *            The PTS of the frame.
  */
- func (f frame) setPTS(pts uint64) {
+ func (f frame) setPTS(pts int64) {
  	f.pts = pts
  }
 

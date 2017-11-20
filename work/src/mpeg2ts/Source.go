@@ -6,7 +6,7 @@ import (
 )
 const UDP_SIZE = 1500;
 
-//server code:
+//server code:   //extractstrean() code
 func main() {
 	addr, _ := net.ResolveUDPAddr("udp", ":8888")
 	sock, _ := net.ListenUDP("udp", addr)
