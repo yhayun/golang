@@ -33,6 +33,13 @@ func (q frameQueue) NewElement() *Frame {
 }
 
 /**
+ *  Wrapper around NewElement, does the same thing.
+ */
+func (q frameQueue) Poll() *Frame {
+	return q.NewElement()
+}
+
+/**
  * @param e
  *            Recycles a given instance of type E back to the pool.
  */
@@ -54,3 +61,6 @@ func (q frameQueue) Offer(f *Frame) bool {
 }
 
 
+func ( q frameQueue) IsEmpty() bool {
+	return 0 == len(q.queue)
+}

@@ -5,7 +5,29 @@ import (
 	"time"
 )
 
+func CheckIfIFrame(buffer []byte, offset int, length int) bool {
+	var startOffset int = offset
+
+	for i := startOffset; i < (length -7); i++ {
+		var j int = offset + i
+		if buffer[j] == 0 {
+			if buffer[j+1] == 0 {
+				if buffer[j+2] == 1 {
+					var val short= (short) (0x001f & buffer[j + 3])
+					if val == 7 {
+						return true // Start GOP was detected
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
+
 func consumer(videoFrames frameQueue) {
+	h264Buffer := new([]byte, 60*1024*1024)
+	var length int = 0
 	var iframeDetected bool = false
 	var numIframes int = 0
 	for {
@@ -18,46 +40,32 @@ func consumer(videoFrames frameQueue) {
 				}
 			}
 		}
-	}
-
-	var _frame frame  = videoFrames.poll();
-	if !iframeDetected {
-		if
-	}
-}
-
-boolean iframeDetected = false;
-int numIframes = 0;
-while(true) {
-	if(videoFrames.isEmpty()) {
-		Sleeper.sleep(100);
-		if(videoFrames.isEmpty()) {
-			Sleeper.sleep(8000);
-			if(videoFrames.isEmpty()) {
-				break;
+		var frame *Frame  = videoFrames.Poll();
+		if !iframeDetected {
+			if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
+				iframeDetected = true
+			} else {
+				videoFrames.Recylce(frame)
+				continue
 			}
 		}
-	}
-	Frame frame = videoFrames.poll();
-	if(!iframeDetected) {
-		if(checkIfIFrame(frame.getData(), 0, frame.size())) {
-			iframeDetected = true;
+		if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
+			numIframes++
 		}
-		else {
-			videoFrames.recycle(frame);
-		continue;
+		if numIframes >= 2 {
+			videoFrames.Recylce(frame)
+			continue
 		}
-	}
-	if(checkIfIFrame(frame.getData(), 0, frame.size())) {
-		numIframes++;
-	}
-	if(numIframes >= 2) {
-		videoFrames.recycle(frame);
-	continue;
+
+		ArrayCopy(frame.GetData(),0, *h264Buffer,length,frame.Size())
+		length += frame.Size()
+		videoFrames.Recylce(frame)
 	}
 
-	//System.out.println(frame.size());
-	System.arraycopy(frame.getData(), 0, h264Buffer, length, frame.size());
-	length += frame.size();
-	videoFrames.recycle(frame);
+	///todo - this is testMP4 rest of function. for now just print what we got.
+	fmt.Println(*h264Buffer)
 }
+
+
+
+
