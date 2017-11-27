@@ -30,7 +30,6 @@ type Mpeg2TSParser struct {
 		 endFlag: false,
 		 output: output,
 	 }
- 	// todo - complete this function.
  }
 
  func (ps Mpeg2TSParser) GetPreviousCounter(counter int) int{
@@ -68,12 +67,11 @@ type Mpeg2TSParser struct {
 	 }
 
 	 if ps.currentFrame == nil {
-	 	var temp frame = ps.output.NewElement()
- 		ps.currentFrame = &temp
+ 		ps.currentFrame = ps.output.NewElement()
  		ps.currentFrame.Clear()
 	 }
 
-	 if ps.currentFrame == nil { //todo - Makes no sense.
+	 if ps.currentFrame == nil {
 		 fmt.Println("currentFrame is null")
 		 time.Sleep(5 * time.Millisecond)
 		 return
@@ -88,11 +86,13 @@ type Mpeg2TSParser struct {
 					}
 					time.Sleep(5 * time.Millisecond)
 				}
-				 var temp frame = ps.output.NewElement()
-				 ps.currentFrame = &temp
+				 ps.currentFrame = ps.output.NewElement()
 				 ps.currentFrame.Clear();
 
-				 //todo check if frame is null again - makes no sense in GO
+				 if ps.currentFrame == nil {
+					 fmt.Println("currentFrame is null")
+					 return
+				 }
 			 } else {
 				 fmt.Println("currentFrame.clear()");
 				 ps.currentFrame.Clear();

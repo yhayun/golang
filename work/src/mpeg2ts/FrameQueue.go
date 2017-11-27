@@ -23,8 +23,13 @@ func NewFrameQueue(capacity int, frameCapacity int) *frameQueue {
 /**
  * @return A new pre-allocated instance of type E.
  */
-func (q frameQueue) NewElement() frame {
-	return <- q.queue
+func (q frameQueue) NewElement() *frame {
+	select {
+	case tmp := <- q.queue:
+		return &tmp
+	default:
+		return nil
+	}
 }
 
 /**
