@@ -38,6 +38,14 @@ type Mpeg2TSPacket struct {
 	receiveTime long
 }
 
+func (tsP* Mpeg2TSPacket) IsPayloadExist() bool{
+	return tsP.payloadExist
+}
+
+
+
+
+
 func (tsP* Mpeg2TSPacket) IsStartOfPES() bool{
 	return tsP.startOfPES;
 }
@@ -215,7 +223,7 @@ func (tsP* Mpeg2TSPacket) GetH264type() int16 {
 
 	// If start of PES, look for Sequence Parameter Set (SPS)
 	// If it was found then it is I frame / GOP start otherwise P frame
-	if (tsP.isStartOfPES()) {
+	if (tsP.IsStartOfPES()) {
 		for i := startOffset; i < (TRANSPORT_PACKET_SIZE - 5); i++ {
 			var j int= tsP.offset + i;
 			if (buffer[j] == 0) {
