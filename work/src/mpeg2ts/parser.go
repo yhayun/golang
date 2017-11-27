@@ -14,7 +14,7 @@ type Mpeg2TSParser struct {
     output frameQueue
 	currentFrame * frame
 	iFrameFound bool
-	lastFrameTime int64
+	lastFrameTime long
 	endFlag bool
 }
 

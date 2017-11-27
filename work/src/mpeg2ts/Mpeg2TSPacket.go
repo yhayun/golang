@@ -147,6 +147,10 @@ func GetContinuityCounter(buffer []byte , offset int) int {
 	return counter
 }
 
+func (tsP Mpeg2TSPacket) GetContinuityCounter() int {
+	return tsP.continuityCounter
+}
+
 
 func GetProgramPID(buffer []byte , offset int) int {
 	var dataOffset int = TsDataOffset(buffer, offset);
@@ -155,6 +159,10 @@ func GetProgramPID(buffer []byte , offset int) int {
 
 func IsStart(tsPacket []byte, offset int) bool {
 	return (tsPacket[1 + offset] & 0x40) != 0;
+}
+
+func (tsP Mpeg2TSPacket) IsStart() bool{
+	return tsP.start
 }
 
 func (tsP* Mpeg2TSPacket) GetType() int {
@@ -170,6 +178,19 @@ func GetPMTLength(buffer []byte, offset int) int{
 	var pmtSectionLength int = (int)((buffer[tsDataOffset] & 0xf) << 8) + (int)(buffer[1+tsDataOffset])
 	return pmtSectionLength + 3;
 }
+
+func (tsP Mpeg2TSPacket) GetPMTLength() int{
+	return tsP.pmtLength
+}
+
+func (tsP Mpeg2TSPacket) GetDataOffset() int{
+	return tsP.dataOffset
+}
+
+func (tsP Mpeg2TSPacket) GetDataLength() int{
+	return tsP.dataLength
+}
+
 func IsStartOfPES(buffer []byte, offset int) bool {
 	if (buffer[1+offset] & 0x40) == 0 {
 		return false
@@ -192,7 +213,13 @@ func GetPayloadOffset(buffer []byte, offset int) int{
 	return internalOffset;
 }
 
+func (tsP Mpeg2TSPacket) GetPayloadOffset() int {
+	return tsP.payloadOffset
+}
 
+func (tsP Mpeg2TSPacket) GetPayloadLength() int {
+	return tsP.payloadLength
+}
 
 func GetPTS(buffer []byte, offset int) long {
 
@@ -214,6 +241,9 @@ func GetPTS(buffer []byte, offset int) long {
 	return pts;
 }
 
+func (tsP Mpeg2TSPacket) GetPTS() long {
+	return tsP.pts
+}
 
 func (tsP* Mpeg2TSPacket) GetH264type() int16 {
 
@@ -253,4 +283,5 @@ func (tsP* Mpeg2TSPacket) GetH264VideoFrameType() int{
 return VideoFrameType_OTHER;
 
 }
+
 
