@@ -43,7 +43,12 @@ func (tsP* Mpeg2TSPacket) IsPayloadExist() bool{
 }
 
 
-
+func (tsP* Mpeg2TSPacket) GetPID() int{
+	return tsP.pid
+}
+func (tsP* Mpeg2TSPacket) GetProgramPID() int{
+	return tsP.programPID
+}
 
 
 func (tsP* Mpeg2TSPacket) IsStartOfPES() bool{
@@ -138,8 +143,11 @@ func TsDataOffset(buffer []byte , offset int) int {
 }
 
 func GetPID(buffer []byte , offset int) int {
-	var pid int = (int)(((buffer[1 + offset] & 0x1f) << 8) & 0x0000ffff)+ (int)(buffer[2 + offset] & 0x00ff)
-	return pid;
+	var pid int = (int)((buffer[1 + offset] & 0x1f) << 8)
+	pid =  pid & 0x0000ffff
+	var pid2 int = (int)(buffer[2 + offset] & 0x00ff)
+
+	return pid+pid2;
 }
 
 func GetContinuityCounter(buffer []byte , offset int) int {
@@ -156,6 +164,7 @@ func GetProgramPID(buffer []byte , offset int) int {
 	var dataOffset int = TsDataOffset(buffer, offset);
 	return (int)((buffer[dataOffset + 11] & 0x1F) << 8) + (int)(0x0ff & buffer[dataOffset + 12]);
 }
+
 
 func IsStart(tsPacket []byte, offset int) bool {
 	return (tsPacket[1 + offset] & 0x40) != 0;
