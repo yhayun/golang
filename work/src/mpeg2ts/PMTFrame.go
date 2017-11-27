@@ -105,7 +105,7 @@ func (pmt PMTFrame) GetStreamInfos() map[int]StreamInfo {
 		var streamInfo StreamInfo
 		streamInfo.streamType = pmt.GetStreamType(pmt.data[offset])
 		offset +=1
-		streamInfo.streamPID = (int)((((pmt.data[offset] & 0x1F) << 8)& 0x0000ffff) + (pmt.data[offset+1]& 0x00ff))
+		streamInfo.streamPID = (int)((((int)(pmt.data[offset] & 0x1F) << 8)& 0x0000ffff) + (int)(pmt.data[offset+1]& 0x00ff))
 		offset += 2
 		var esInfoLength int = (int)(((pmt.data[offset]&0xf)<<8)+ pmt.data[offset+1])
 		offset += esInfoLength +2;

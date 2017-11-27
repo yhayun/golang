@@ -33,7 +33,7 @@ func (dgPacket* DatagramPacket) SetData(data []byte) {
 }
 
 type Mpeg2TSSource struct {
-	socket DatagramSocket
+	//socket DatagramSocket
 	reTransmitFlag bool
 	videoFrames frameQueue
     programPID int
