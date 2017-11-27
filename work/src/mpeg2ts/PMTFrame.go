@@ -58,7 +58,7 @@ func (pmt PMTFrame) GetExpectedSize() int {
 
 
 func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
-	if p.getType() != Mpeg2TSPacketType_PMT {
+	if p.GetType() != Mpeg2TSPacketType_PMT {
 		return false
 	}
 
@@ -75,7 +75,7 @@ func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
 		pmt.continuityCounter = -1
 		return false
 	} else {
-		ArrayCopy(p.getData(), p.GetDataOffset(), pmt.data, pmt.size, p.GetDataLength())
+		ArrayCopy(p.GetData(), p.GetDataOffset(), pmt.data, pmt.size, p.GetDataLength())
 		pmt.size += p.GetDataLength()
 		pmt.continuityCounter = p.GetContinuityCounter()
 		if pmt.size >= pmt.expectedSize {
