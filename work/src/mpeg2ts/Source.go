@@ -33,11 +33,10 @@ func (dgPacket* DatagramPacket) SetData(data []byte) {
 }
 
 type Mpeg2TSSource struct {
-	socket DatagramSocket
+	//socket DatagramSocket
 	reTransmitFlag bool
 	videoFrames frameQueue
     programPID int
- 	udpSource UdpSource
 	outputPort int
 	socketReceiveBufferSize int
 }
@@ -137,7 +136,7 @@ func (u* UdpSource) producer() {
 	sock, _ := net.ListenUDP("udp", addr)
 	fmt.Println("working on UDP");
 	for u.endFlag != true {
-		
+
 	}
 
 	i := 0
