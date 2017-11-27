@@ -19,7 +19,7 @@ func NewPMTFrame() *PMTFrame {
 	}
 }
 
-func (pmt PMTFrame) getStreamType(streamTypeByte byte) int {
+func (pmt PMTFrame) GetStreamType(streamTypeByte byte) int {
 	switch streamTypeByte {
 	case 0x02:
 		return TS_STREAM_TYPE_MPEG2V;
@@ -34,50 +34,50 @@ func (pmt PMTFrame) getStreamType(streamTypeByte byte) int {
 	}
 }
 
-func arrayCopy (src []byte, srcPos int, dst []byte, dstPos int , length int) {
+func ArrayCopy (src []byte, srcPos int, dst []byte, dstPos int , length int) {
 	for i := 0; i < length; i++ {
 		dst[dstPos + i] = src[srcPos + i]
 	}
 }
 
-func (pmt PMTFrame) setProgramPID(programID int) {
+func (pmt PMTFrame) SetProgramPID(programID int) {
 	pmt.programPID = programID
 }
 
-func (pmt PMTFrame) getProgramPID() int {
+func (pmt PMTFrame) GetProgramPID() int {
 	return pmt.programPID
 }
 
-func (pmt PMTFrame) setExpectedSize(expectedSize int) {
+func (pmt PMTFrame) SetExpectedSize(expectedSize int) {
 	pmt.expectedSize = expectedSize
 }
 
-func (pmt PMTFrame) getExpectedSize() int {
+func (pmt PMTFrame) GetExpectedSize() int {
 	return pmt.expectedSize
 }
 
 
-func (pmt PMTFrame) addPacket(p Mpeg2TSPacket) bool {
+func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
 	if p.getType() != Mpeg2TSPacketType_PMT {
 		return false
 	}
 
-	if pmt.continuityCounter == -1 && !p.isStart() {
+	if pmt.continuityCounter == -1 && !p.IsStart() {
 		return false
 	}
 
-	if p.isStart() {
-		pmt.expectedSize = p.getPMTLength()
+	if p.IsStart() {
+		pmt.expectedSize = p.GetPMTLength()
 	}
 
-	if pmt.continuityCounter != -1 && p.getContinuityCounter() != (pmt.continuityCounter + 1)% MAX_CONTINUITY_COUNTER {
+	if pmt.continuityCounter != -1 && p.GetContinuityCounter() != (pmt.continuityCounter + 1)% MAX_CONTINUITY_COUNTER {
 		pmt.size = 0
 		pmt.continuityCounter = -1
 		return false
 	} else {
-		arrayCopy(p.getData(), p.getDataOffset(), pmt.data, pmt.size, p.getDataLength())
-		pmt.size += p.getDataLength()
-		pmt.continuityCounter = p.getContinuityCounter()
+		ArrayCopy(p.getData(), p.GetDataOffset(), pmt.data, pmt.size, p.GetDataLength())
+		pmt.size += p.GetDataLength()
+		pmt.continuityCounter = p.GetContinuityCounter()
 		if pmt.size >= pmt.expectedSize {
 			return true
 		}
@@ -86,42 +86,31 @@ func (pmt PMTFrame) addPacket(p Mpeg2TSPacket) bool {
 	return false
 }
 
-func (pmt PMTFrame) getPcrPID() int {
+func (pmt PMTFrame) GetPcrPID() int {
 	var pcrPID int = ((int)((pmt.data[9] & 0x1F) << 8) & 0x0000ffff) + (int)(pmt.data[10] & 0x00ff)
 	return pcrPID
 }
 
-func (pmt PMTFrame) getStreamInfos() map[int]StreamInfo { //todo - make streaminfo class
-	var m  = make(map[int]StreamInfo)
+func (pmt PMTFrame) GetStreamInfos() map[int]StreamInfo {
+	var result = make(map[int]StreamInfo)
 	var offset  = 2
 	var programMapSectionLength int = ((int)(pmt.data[offset]&0x0f) <<8) + (int)(pmt.data[offset+1])
 
-}
+	//Skip everything till start of streams array
+	offset += 9
+	var programInfoLength int = (int) (((pmt.data[offset]&0xf) <<8) + pmt.data[offset+1]);
+	offset+= programInfoLength + 2
 
-//public Map<Integer, StreamInfo> getStreamInfos(){
-//HashMap<Integer, StreamInfo> result = new HashMap<Integer, StreamInfo>();
-//
-//int offset = 2;
-//
-//int programMapSectionLength= ((data[offset]&0x0f) <<8) + data[offset+1];
-//
-////Skip everything till start of streams array
-//offset+=9;
-//int programInfoLength = ((data[offset]&0xf) <<8) + data[offset+1];
-//offset+=programInfoLength+2;
-//
-//while(offset < programMapSectionLength-1){
-//StreamInfo streamInfo = new StreamInfo();
-//
-//streamInfo.streamType = getStreamType(data[offset]);
-//offset +=1;
-//streamInfo.streamPID = (((data[offset] & 0x1F) << 8)& 0x0000ffff) + (data[offset+1]& 0x00ff);
-//offset += 2;
-//int esInfoLength = ((data[offset]&0xf)<<8)+data[offset+1];
-//offset += esInfoLength +2;
-//result.put(streamInfo.streamPID, streamInfo);
-//}
-//
-//return result;
-//
-//}
+	for offset < programMapSectionLength -1 {
+		var streamInfo StreamInfo
+		streamInfo.streamType = pmt.GetStreamType(pmt.data[offset])
+		offset +=1
+		streamInfo.streamPID = (int)((((pmt.data[offset] & 0x1F) << 8)& 0x0000ffff) + (pmt.data[offset+1]& 0x00ff))
+		offset += 2
+		var esInfoLength int = (int)(((pmt.data[offset]&0xf)<<8)+ pmt.data[offset+1])
+		offset += esInfoLength +2;
+		result[streamInfo.streamPID] = streamInfo;
+	}
+
+	return result;
+}

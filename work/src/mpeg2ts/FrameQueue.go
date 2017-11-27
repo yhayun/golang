@@ -23,7 +23,7 @@ func NewFrameQueue(capacity int, frameCapacity int) *frameQueue {
 /**
  * @return A new pre-allocated instance of type E.
  */
-func (q frameQueue) newElement() frame {
+func (q frameQueue) NewElement() frame {
 	return <- q.queue
 }
 
@@ -31,15 +31,15 @@ func (q frameQueue) newElement() frame {
  * @param e
  *            Recycles a given instance of type E back to the pool.
  */
-func (q frameQueue) recylce(f *frame) {
+func (q frameQueue) Recylce(f *frame) {
 	if f != nil {
-		f.clear()
+		f.Clear()
 		q.queue <- *f
 	}
 }
 
 //This behaves as a non-blocking put.
-func (q frameQueue) offer(f *frame) bool {
+func (q frameQueue) Offer(f *frame) bool {
 	select {
 	case q.queue <- *f:
 		return true
