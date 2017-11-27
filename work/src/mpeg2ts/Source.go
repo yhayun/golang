@@ -89,6 +89,7 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 				u.pmtFrame = *NewPMTFrame();
 				u.detectFlag = false;
 			}
+
 		}
 
 		if (u.detectFlag) {
@@ -110,7 +111,7 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 
 					//for (map.Entry<Integer, StreamInfo> entry : streamsMap
 					//.entrySet()) {
-					for k, v := range u.streamsMap {
+					for _, v := range u.streamsMap {
 						var info StreamInfo = v
 						if (info.streamType == TS_STREAM_TYPE_H264) {
 							fmt.Println("New PID detected = " + string(info.streamPID))
@@ -136,22 +137,17 @@ func (u* UdpSource) producer() {
 	sock, _ := net.ListenUDP("udp", addr)
 	fmt.Println("working on UDP");
 	for u.endFlag != true {
-
-	}
-
-	i := 0
-	for {
-		i++
-		buf := make([]byte, UDP_SIZE)
-		rlen, _, err := sock.ReadFromUDP(buf)
-		if err != nil {
-			fmt.Println(err)
+		rlen, _, err := sock.ReadFromUDP(buffer)
+		if firstPacket {
+			println("At least one packet was received")
+			firstPacket = false
 		}
-		defer sock.Close();
-		fmt.Println(string(buf[0:rlen]));
-		fmt.Println(i);
-		//go handlePacket(buf, rlen)
+		u.extractStreams(u.packet)
 	}
+	fmt.Println("Before close socket ")
+	//todo clean socket
+	defer sock.Close();
+
 }
 //server code:   //extractstrean() code
 func main() {
@@ -159,17 +155,7 @@ func main() {
 	sock, _ := net.ListenUDP("udp", addr)
 	fmt.Println("working on UDP");
 
-	i := 0
-	for {
-		i++
-		buf := make([]byte, UDP_SIZE)
-		rlen, _, err := sock.ReadFromUDP(buf)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer sock.Close();
-		fmt.Println(string(buf[0:rlen]));
-		fmt.Println(i);
+
 		//go handlePacket(buf, rlen)
 	}
 }
