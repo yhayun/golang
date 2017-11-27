@@ -15,10 +15,23 @@ func timeMilisecs() int64 {
 	return time.Now().UnixNano()%1e6/1e3
 }
 
+type DatagramPacket struct {
+	buf []byte
+	length int
+}
+
+func (dgPacket* DatagramPacket) GetData() []byte{
+	return dgPacket.buf
+}
+
+func (dgPacket* DatagramPacket) GetLength() []byte{
+	return dgPacket.length
+}
+
 type Mpeg2TSSource struct {
 	socket DatagramSocket
 	reTransmitFlag bool
-	videoFrames PooledQueue<Frame>
+	videoFrames frameQueue
     programPID int
  	udpSource UdpSource
 	outputPort int
@@ -75,15 +88,15 @@ type UdpSource struct {
 
 	previousTime long
 }
-func (u* UdpSource) extractStreams(packet int /*DatagramPacket todo*/ ) {
+func (u* UdpSource) extractStreams(packet DatagramPacket) {
 
-	for offset := 0; offset < packet/*.getLength()todo*/; offset += MPEG2TS_PACKET_LENGTH {
+	for offset := 0; offset < packet.length; offset += MPEG2TS_PACKET_LENGTH {
 
-		u.tsPacket.fromBytes(packet.getData(), offset, programPID);
+		u.tsPacket.fromBytes(packet.buf, offset, programPID);
 
 		if(previousTime != -1) {
 			if(detectFlag && ((System.currentTimeMillis() - previousTime) > 1000)) {
-				log.info("Timeout detected, now looking for new PID");
+				//log.info("Timeout detected, now looking for new PID");
 				programPID = 0;
 				pmtFrame = new PMTFrame();
 				detectFlag = false;
