@@ -12,7 +12,7 @@ const MAX_COUNTER = 16
 type Mpeg2TSParser struct {
 	counter int
     output frameQueue
-	currentFrame * frame
+	currentFrame * Frame
 	iFrameFound bool
 	lastFrameTime long
 	endFlag bool
