@@ -1,8 +1,5 @@
 package main
 
-import (
-	"container/list"
-)
 
 type long int64
 type short int16
@@ -41,18 +38,18 @@ type Mpeg2TSPacket struct {
 	receiveTime long
 }
 
-func (tsP* Mpeg2TSPacket) isStartOfPES() bool{
+func (tsP* Mpeg2TSPacket) IsStartOfPES() bool{
 	return tsP.startOfPES;
 }
 
-func validMpegTsPacket(data []byte, offset int) bool{
+func ValidMpegTsPacket(data []byte, offset int) bool{
 	return data[offset] == 0x47
 }
 
-func (tsP* Mpeg2TSPacket) fromBytes(data []byte, offset int, programPID int) {
-	tsP.reset()
+func (tsP* Mpeg2TSPacket) FromBytes(data []byte, offset int, programPID int) {
+	tsP.Reset()
 
-	if !validMpegTsPacket(data, offset) {
+	if !ValidMpegTsPacket(data, offset) {
 		tsP.valid = false;
 		return;
 	}
@@ -62,39 +59,39 @@ func (tsP* Mpeg2TSPacket) fromBytes(data []byte, offset int, programPID int) {
 
 	tsP.valid = true
 
-	tsP.pid = getPID(data, offset);
+	tsP.pid = GetPID(data, offset);
 
-	tsP.dataOffset = tsDataOffset(data, offset);
+	tsP.dataOffset = TsDataOffset(data, offset);
 	tsP.dataLength = TRANSPORT_PACKET_SIZE + offset - tsP.dataOffset;
-	tsP.continuityCounter = getContinuityCounter(data, offset);
-	tsP.adaptationExists = isAdaptationFieldExist(data, offset);
+	tsP.continuityCounter = GetContinuityCounter(data, offset);
+	tsP.adaptationExists = IsAdaptationFieldExist(data, offset);
 	//TODO PCR ignored
 
 	if tsP.pid == 0 {
 		tsP.Mpeg2TSPacketType = 0
-		tsP.programPID = getProgramPID(data, offset);
+		tsP.programPID = GetProgramPID(data, offset);
 	} else if (tsP.pid == programPID) {
 		tsP.Mpeg2TSPacketType = 1
-		var start bool = isStart(data, offset);
+		var start bool = IsStart(data, offset);
 		if (start) {
-			tsP.pmtLength = getPMTLength(data, offset);
+			tsP.pmtLength = GetPMTLength(data, offset);
 		}
 	} else {
 		tsP.Mpeg2TSPacketType = 2
-		tsP.startOfPES = isStartOfPES(data, offset);
-		tsP.payloadExist = payloadExists(data, offset);
+		tsP.startOfPES = IsStartOfPES(data, offset);
+		tsP.payloadExist = PayloadExists(data, offset);
 		if (tsP.payloadExist) {
-			tsP.payloadOffset = getPayloadOffset(data, offset);
+			tsP.payloadOffset = GetPayloadOffset(data, offset);
 			tsP.payloadLength = TRANSPORT_PACKET_SIZE + offset - tsP.payloadOffset;
 		}
 		if (tsP.startOfPES) {
-			tsP.pts = getPTS(data, offset);
+			tsP.pts = GetPTS(data, offset);
 		}
 	}
 }
 
 
-func (tsP* Mpeg2TSPacket) reset() {
+func (tsP* Mpeg2TSPacket) Reset() {
 	tsP.valid = false
 	tsP.pid = 0;
 	tsP.Mpeg2TSPacketType = -1;
@@ -115,72 +112,72 @@ func (tsP* Mpeg2TSPacket) reset() {
 	tsP.receiveTime = 0;
 }
 
-func isAdaptationFieldExist(buffer [] byte, offset int) bool{
+func IsAdaptationFieldExist(buffer [] byte, offset int) bool{
 	return ((buffer[3 + offset] & 0x20) != 0);
 }
 
-func adaptationFieldLength(buffer []byte , offset int) int {
+func AdaptationFieldLength(buffer []byte , offset int) int {
 	var length int = (int)(buffer[4 + offset] & 0x00ff) ;
 	return length;
 }
 
-func tsDataOffset(buffer []byte , offset int) int {
+func TsDataOffset(buffer []byte , offset int) int {
 	var internalOffset int = 4 + offset
-	if isAdaptationFieldExist(buffer, offset) {
-		internalOffset += 1 + adaptationFieldLength(buffer, offset)
+	if IsAdaptationFieldExist(buffer, offset) {
+		internalOffset += 1 + AdaptationFieldLength(buffer, offset)
 	}
 	return internalOffset;
 }
 
-func getPID(buffer []byte , offset int) int {
+func GetPID(buffer []byte , offset int) int {
 	var pid int = (int)(((buffer[1 + offset] & 0x1f) << 8) & 0x0000ffff)+ (int)(buffer[2 + offset] & 0x00ff)
 	return pid;
 }
 
-func getContinuityCounter(buffer []byte , offset int) int {
+func GetContinuityCounter(buffer []byte , offset int) int {
 	var counter int = int(buffer[3 + offset] & 0x0f)
 	return counter
 }
 
 
-func getProgramPID(buffer []byte , offset int) int {
-	var dataOffset int = tsDataOffset(buffer, offset);
+func GetProgramPID(buffer []byte , offset int) int {
+	var dataOffset int = TsDataOffset(buffer, offset);
 	return (int)((buffer[dataOffset + 11] & 0x1F) << 8) + (int)(0x0ff & buffer[dataOffset + 12]);
 }
 
-func isStart(tsPacket []byte, offset int) bool {
+func IsStart(tsPacket []byte, offset int) bool {
 	return (tsPacket[1 + offset] & 0x40) != 0;
 }
 
-func (tsP* Mpeg2TSPacket) getType() int {
+func (tsP* Mpeg2TSPacket) GetType() int {
 	return tsP.Mpeg2TSPacketType;
 }
 
-func (tsP* Mpeg2TSPacket) getData() []byte {
+func (tsP* Mpeg2TSPacket) GetData() []byte {
 	return tsP.data;
 }
 
-func getPMTLength(buffer []byte, offset int) int{
-	var tsDataOffset int = tsDataOffset(buffer, offset) + 2
+func GetPMTLength(buffer []byte, offset int) int{
+	var tsDataOffset int = TsDataOffset(buffer, offset) + 2
 	var pmtSectionLength int = (int)((buffer[tsDataOffset] & 0xf) << 8) + (int)(buffer[1+tsDataOffset])
 	return pmtSectionLength + 3;
 }
-func isStartOfPES(buffer []byte, offset int) bool {
+func IsStartOfPES(buffer []byte, offset int) bool {
 	if (buffer[1+offset] & 0x40) == 0 {
 		return false
 	}
-	var tsDataOffset int = tsDataOffset(buffer, offset)
+	var tsDataOffset int = TsDataOffset(buffer, offset)
 	var b bool = buffer[tsDataOffset] == 0 && buffer[tsDataOffset + 1] == 0 && buffer[tsDataOffset + 2] == 0x01
 	return b
 }
-func payloadExists(buffer []byte, offset int) bool{
+func PayloadExists(buffer []byte, offset int) bool{
 	return (buffer[3 + offset] & 0x10) != 0
 }
 
-func getPayloadOffset(buffer []byte, offset int) int{
-	var internalOffset int = tsDataOffset(buffer, offset)
+func GetPayloadOffset(buffer []byte, offset int) int{
+	var internalOffset int = TsDataOffset(buffer, offset)
 
-	if (isStartOfPES(buffer, offset)) {
+	if (IsStartOfPES(buffer, offset)) {
 		var pes_header_data_length byte = buffer[internalOffset + 8]
 		internalOffset += 9 + (int)(pes_header_data_length)
 	}
@@ -189,9 +186,9 @@ func getPayloadOffset(buffer []byte, offset int) int{
 
 
 
-func getPTS(buffer []byte, offset int) long {
+func GetPTS(buffer []byte, offset int) long {
 
-	var dataOffset int = tsDataOffset(buffer, offset);
+	var dataOffset int = TsDataOffset(buffer, offset);
 
 	if ((buffer[7 + dataOffset] & 0x80) == 0) {
 	return -1;
@@ -210,11 +207,11 @@ func getPTS(buffer []byte, offset int) long {
 }
 
 
-func (tsP* Mpeg2TSPacket) getH264type() int16 {
+func (tsP* Mpeg2TSPacket) GetH264type() int16 {
 
 	var buffer []byte = tsP.data;
 
-	var startOffset int = tsDataOffset(buffer, tsP.offset) - tsP.offset;
+	var startOffset int = TsDataOffset(buffer, tsP.offset) - tsP.offset;
 
 	// If start of PES, look for Sequence Parameter Set (SPS)
 	// If it was found then it is I frame / GOP start otherwise P frame
@@ -238,8 +235,8 @@ func (tsP* Mpeg2TSPacket) getH264type() int16 {
 }
 
 //todo increaseContinuityCounter()
-func (tsP* Mpeg2TSPacket) getH264VideoFrameType() int{
-	var _type int16 = tsP.getH264type();
+func (tsP* Mpeg2TSPacket) GetH264VideoFrameType() int{
+	var _type int16 = tsP.GetH264type();
 	if _type == 0 {
 		return VideoFrameType_I_START;
 	} else if (_type == 1) || (_type == 6) {
