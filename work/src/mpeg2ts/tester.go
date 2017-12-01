@@ -56,7 +56,6 @@ func consumer(videoFrames frameQueue) {
 			}
 		}
 		var frame Frame  = *videoFrames.Poll();
-		fmt.Println(videoFrames)
 		if !iframeDetected {
 			if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
 				iframeDetected = true
@@ -81,7 +80,7 @@ func consumer(videoFrames frameQueue) {
 	fmt.Println("left consumer loop.")
 	///todo - this is testMP4 rest of function. for now just print what we got.
 	fmt.Println(h264Buffer)
-	WriteFile(h264Buffer,"tempfile.txt");
+	//WriteFile(h264Buffer,"tempfile.txt");
 }
 
 

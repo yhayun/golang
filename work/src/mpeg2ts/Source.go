@@ -80,8 +80,6 @@ type UdpSource struct {
 }
 
 func (u* UdpSource) extractStreams(packet DatagramPacket) {
-	fmt.Println("extractStream")
-	fmt.Println(packet)
 	for offset := 0; offset < packet.GetLength(); offset += MPEG2TS_PACKET_LENGTH {
 
 		u.tsPacket.FromBytes(packet.GetData(), offset, u.programPID);
@@ -99,19 +97,18 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 		if (u.detectFlag) {
 			if (u.tsPacket.GetPID() == u.videoPID) {
 				u.previousTime = timeMilisecs();
-				//u.videoTSParser.Write(u.tsPacket);
 				u.videoTSParser.Write(u.tsPacket);
 			}
 		} else {
 			if (u.tsPacket.GetType() == Mpeg2TSPacketType_PAT) {
+				fmt.Println("PAT found")
 				u.programPID = u.tsPacket.GetProgramPID();
 			}
 
-			if (u.tsPacket.GetType() == Mpeg2TSPacketType_PMT) { // PMT
-				// received
+			if (u.tsPacket.GetType() == Mpeg2TSPacketType_PMT) { // PMT received
+				fmt.Println("PMT received")
+				if (u.pmtFrame.AddPacket(u.tsPacket)) {// pmtFrame is complete
 
-				if (u.pmtFrame.AddPacket(u.tsPacket)) {
-					// pmtFrame is complete
 					u.streamsMap = u.pmtFrame.GetStreamInfos();
 
 					//for (map.Entry<Integer, StreamInfo> entry : streamsMap
@@ -119,7 +116,7 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 					for _, v := range u.streamsMap {
 						var info StreamInfo = v
 						if (info.streamType == TS_STREAM_TYPE_H264) {
-							fmt.Println("New PID detected = " + string(info.streamPID))
+							fmt.Println("New PID detected = ", info.streamPID)
 							u.previousTime = timeMilisecs()
 							u.detectFlag = true;
 							u.videoPID = info.streamPID;
@@ -140,7 +137,6 @@ func (u* UdpSource) producer() { // equivalent
 	fmt.Println("Entered Producer")
 
 	for u.endFlag != true {
-		//fmt.Println("entered producer loop")
 		rlen, _, err := u.socket.ReadFromUDP(buffer)
 		if err != nil {
 			fmt.Println("No packet received")
@@ -150,12 +146,8 @@ func (u* UdpSource) producer() { // equivalent
 			fmt.Println("At least one packet was received")
 			firstPacket = false
 		}
-		//var pgPacket = NewDatagramPacket(buffer, rlen)
-
-		//fmt.Println(rlen)
-		fmt.Println(buffer)
-		u.videoFrames.NewElement().Append(buffer,0,rlen)
-		//u.extractStreams(*pgPacket)
+		var pgPacket = NewDatagramPacket(buffer, rlen)
+		u.extractStreams(*pgPacket)
 	}
 	fmt.Println("exited loop")
 	//todo clean socket
@@ -195,7 +187,6 @@ func main() {
 	go uSource.producer()
 	go consumer(videoFrames)
 	<-done
-	time.Sleep(1000* time.Millisecond)
 }
 
 

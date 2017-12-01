@@ -1,5 +1,7 @@
 package main
 
+//import "fmt"
+
 type PMTFrame struct {
 	data              []byte //= new byte[1280];
 	size              int    // = 0;
@@ -65,6 +67,7 @@ func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
 	if pmt.continuityCounter == -1 && !p.IsStart() {
 		return false
 	}
+
 
 	if p.IsStart() {
 		pmt.expectedSize = p.GetPMTLength()

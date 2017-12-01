@@ -1,6 +1,5 @@
 package main
 
-import "fmt"
 
 //   todo - refernce:
 //   https://stackoverflow.com/questions/25657207/golang-how-to-know-a-buffered-channel-is-full
@@ -28,10 +27,8 @@ func NewFrameQueue(capacity int, frameCapacity int) *frameQueue {
 func (q frameQueue) NewElement() *Frame {
 	select {
 	case tmp := <- q.queue:
-		fmt.Println("yes")
 		return &tmp
 	default:
-		fmt.Println("no")
 		return nil
 	}
 }

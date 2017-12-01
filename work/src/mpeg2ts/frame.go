@@ -41,7 +41,7 @@ func ( f Frame) Clear() {
  */
  func (f Frame) Append (buf []byte, offset int ,limit int ) {
 	for i:= 0; i < limit && f.offset < len(f.data); i++ {
-		f.data[f.offset] = buf[offset + i]
+		f.data[f.offset] = buf[offset  + i]
 		f.offset++
 	 }
  }
