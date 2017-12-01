@@ -150,11 +150,12 @@ func (u* UdpSource) producer() { // equivalent
 			fmt.Println("At least one packet was received")
 			firstPacket = false
 		}
-		var pgPacket = NewDatagramPacket(buffer, rlen)
+		//var pgPacket = NewDatagramPacket(buffer, rlen)
 
 		//fmt.Println(rlen)
 		fmt.Println(buffer)
-		u.extractStreams(*pgPacket)
+		u.videoFrames.NewElement().Append(buffer,0,rlen)
+		//u.extractStreams(*pgPacket)
 	}
 	fmt.Println("exited loop")
 	//todo clean socket
