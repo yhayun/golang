@@ -102,6 +102,7 @@ func (tsP* Mpeg2TSPacket) FromBytes(data []byte, offset int, programPID int) {
 		}
 	}
 }
+func NewMpeg2TSPacket() *Mpeg2TSPacket{return &Mpeg2TSPacket{} }
 
 
 func (tsP* Mpeg2TSPacket) Reset() {
