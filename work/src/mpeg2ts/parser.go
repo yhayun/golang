@@ -18,11 +18,7 @@ type Mpeg2TSParser struct {
 	endFlag bool
 }
 
- func (ps *Mpeg2TSParser) NewMpeg2TSParser(output frameQueue) *Mpeg2TSParser{
- 	ps.counter = 0
- 	ps.lastFrameTime = 0
- 	ps.iFrameFound = false
- 	ps.endFlag = false
+ func NewMpeg2TSParser(output frameQueue) *Mpeg2TSParser{
 	 return &Mpeg2TSParser{
 		 counter: -1,
 		 lastFrameTime: 0,
