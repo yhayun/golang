@@ -3,7 +3,20 @@ package main
 import (
 	"fmt"
 	"time"
+	"io/ioutil"
 )
+
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func WriteFile(buffer []byte, file string){
+	err := ioutil.WriteFile(file, buffer, 0644)
+	check(err)
+}
 
 func CheckIfIFrame(buffer []byte, offset int, length int) bool {
 	var startOffset int = offset
@@ -64,6 +77,7 @@ func consumer(videoFrames frameQueue) {
 
 	///todo - this is testMP4 rest of function. for now just print what we got.
 	fmt.Println(h264Buffer)
+	WriteFile(h264Buffer,"tempfile.txt");
 }
 
 
