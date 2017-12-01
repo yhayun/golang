@@ -85,8 +85,8 @@ func (tsP* Mpeg2TSPacket) FromBytes(data []byte, offset int, programPID int) {
 		tsP.programPID = GetProgramPID(data, offset);
 	} else if (tsP.pid == programPID) {
 		tsP.Mpeg2TSPacketType = 1
-		var start bool = IsStart(data, offset);
-		if (start) {
+		tsP.start = IsStart(data, offset);
+		if (tsP.start) {
 			tsP.pmtLength = GetPMTLength(data, offset);
 		}
 	} else {
