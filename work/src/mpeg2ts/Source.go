@@ -80,7 +80,8 @@ type UdpSource struct {
 }
 
 func (u* UdpSource) extractStreams(packet DatagramPacket) {
-
+	fmt.Println("extractStream")
+	fmt.Println(packet)
 	for offset := 0; offset < packet.GetLength(); offset += MPEG2TS_PACKET_LENGTH {
 
 		u.tsPacket.FromBytes(packet.GetData(), offset, u.programPID);
@@ -98,6 +99,7 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 		if (u.detectFlag) {
 			if (u.tsPacket.GetPID() == u.videoPID) {
 				u.previousTime = timeMilisecs();
+				//u.videoTSParser.Write(u.tsPacket);
 				u.videoTSParser.Write(u.tsPacket);
 			}
 		} else {
@@ -138,7 +140,7 @@ func (u* UdpSource) producer() { // equivalent
 	fmt.Println("Entered Producer")
 
 	for u.endFlag != true {
-		fmt.Println("entered loop")
+		//fmt.Println("entered producer loop")
 		rlen, _, err := u.socket.ReadFromUDP(buffer)
 		if err != nil {
 			fmt.Println("No packet received")
@@ -149,16 +151,14 @@ func (u* UdpSource) producer() { // equivalent
 			firstPacket = false
 		}
 		var pgPacket = NewDatagramPacket(buffer, rlen)
-		fmt.Println(rlen)
+
+		//fmt.Println(rlen)
 		fmt.Println(buffer)
 		u.extractStreams(*pgPacket)
 	}
 	fmt.Println("exited loop")
-	fmt.Println("Before close socket ")
 	//todo clean socket
 	defer u.socket.Close();
-	fmt.Println("After close socket ")
-
 }
 //server code:   //extractstrean() code
 

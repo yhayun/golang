@@ -45,7 +45,7 @@ func consumer(videoFrames frameQueue) {
 	var iframeDetected bool = false
 	var numIframes int = 0
 	for {
-		fmt.Println("entered consmer loop")
+		//fmt.Println("entered consmer loop")
 		if videoFrames.IsEmpty() {
 			time.Sleep(100 * time.Millisecond)
 			if videoFrames.IsEmpty() {
@@ -55,12 +55,13 @@ func consumer(videoFrames frameQueue) {
 				}
 			}
 		}
-		var frame *Frame  = videoFrames.Poll();
+		var frame Frame  = *videoFrames.Poll();
+		fmt.Println(videoFrames)
 		if !iframeDetected {
 			if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
 				iframeDetected = true
 			} else {
-				videoFrames.Recylce(frame)
+				videoFrames.Recylce(&frame)
 				continue
 			}
 		}
@@ -68,16 +69,16 @@ func consumer(videoFrames frameQueue) {
 			numIframes++
 		}
 		if numIframes >= 2 {
-			videoFrames.Recylce(frame)
+			videoFrames.Recylce(&frame)
 			continue
 		}
 
 		ArrayCopy(frame.GetData(),0, h264Buffer,length,frame.Size())
 		length += frame.Size()
-		videoFrames.Recylce(frame)
-		fmt.Println("left consmer loop")
+		videoFrames.Recylce(&frame)
+		fmt.Println(h264Buffer)
 	}
-
+	fmt.Println("left consumer loop.")
 	///todo - this is testMP4 rest of function. for now just print what we got.
 	fmt.Println(h264Buffer)
 	WriteFile(h264Buffer,"tempfile.txt");
