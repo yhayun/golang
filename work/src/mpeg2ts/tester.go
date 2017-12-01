@@ -45,10 +45,12 @@ func consumer(videoFrames frameQueue) {
 	var iframeDetected bool = false
 	var numIframes int = 0
 	for {
-		//fmt.Println("entered consmer loop")
+		fmt.Println("entered consmer loop")
 		if videoFrames.IsEmpty() {
+			fmt.Println("consume sleep 100ms")
 			time.Sleep(100 * time.Millisecond)
 			if videoFrames.IsEmpty() {
+				fmt.Println("consume sleep 8000ms")
 				time.Sleep(8000 * time.Millisecond)
 				if videoFrames.IsEmpty() {
 					break
