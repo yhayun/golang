@@ -20,6 +20,9 @@ type DatagramPacket struct {
 	length int
 }
 
+func NewDatagramPacket (b []byte, l int) *DatagramPacket {return &DatagramPacket{b, l}}
+func NewDatagramPacketE () *DatagramPacket {return &DatagramPacket{}}
+
 func (dgPacket* DatagramPacket) GetData() []byte{
 	return dgPacket.buf
 }
@@ -34,13 +37,12 @@ func (dgPacket* DatagramPacket) SetData(data []byte) {
 
 type Mpeg2TSSource struct {
 	//socket DatagramSocket
-	reTransmitFlag bool
 	videoFrames frameQueue
     programPID int
-	outputPort int
-	socketReceiveBufferSize int
+	socket net.UDPConn
+	//outputPort int
+	//socketReceiveBufferSize int
 }
-
 
 
 
@@ -60,8 +62,8 @@ type Mpeg2TSSource struct {
 
 type UdpSource struct {
 	Mpeg2TSSource
-	socket int //DatagramSocket
-	outputSocket int //DatagramSocket
+
+	//outputSocket int //DatagramSocket
 
 	endFlag bool
 	detectFlag bool
@@ -76,6 +78,7 @@ type UdpSource struct {
 	packet DatagramPacket
 
 }
+
 func (u* UdpSource) extractStreams(packet DatagramPacket) {
 
 	for offset := 0; offset < packet.GetLength(); offset += MPEG2TS_PACKET_LENGTH {
@@ -128,36 +131,70 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 		}
 	}
 }
-func (u* UdpSource) producer() {
+func (u* UdpSource) producer() { // equivalent
 	var firstPacket bool = true
 	var buffer= make([]byte, 1500)
 	u.packet.SetData(buffer)
+	fmt.Println("Entered Producer")
 
-	addr, _ := net.ResolveUDPAddr("udp", ":8888")
-	sock, _ := net.ListenUDP("udp", addr)
-	fmt.Println("working on UDP");
 	for u.endFlag != true {
-		rlen, _, err := sock.ReadFromUDP(buffer)
+		fmt.Println("entered loop")
+		rlen, _, err := u.socket.ReadFromUDP(buffer)
+		if err != nil {
+			fmt.Println("No packet received")
+			continue
+		}
 		if firstPacket {
-			println("At least one packet was received")
+			fmt.Println("At least one packet was received")
 			firstPacket = false
 		}
-		u.extractStreams(u.packet)
+		var pgPacket = NewDatagramPacket(buffer, rlen)
+		fmt.Println(rlen)
+		fmt.Println(buffer)
+		u.extractStreams(*pgPacket)
 	}
+	fmt.Println("exited loop")
 	fmt.Println("Before close socket ")
 	//todo clean socket
-	defer sock.Close();
+	defer u.socket.Close();
+	fmt.Println("After close socket ")
 
 }
 //server code:   //extractstrean() code
-func main() {
+
+func NewMpeg2TSSource(port int,queue frameQueue) *Mpeg2TSSource {
+	//addr, _ := net.ResolveUDPAddr("udp", ":"+string(port))
 	addr, _ := net.ResolveUDPAddr("udp", ":8888")
 	sock, _ := net.ListenUDP("udp", addr)
-	fmt.Println("working on UDP");
-
-
-		//go handlePacket(buf, rlen)
+	return &Mpeg2TSSource{queue, 0, *sock}
+}
+func NewUdpSource(port int,queue frameQueue) * UdpSource{
+	return &UdpSource{
+		*NewMpeg2TSSource(port,queue),
+		false,
+		false,
+		0,
+		*NewMpeg2TSParser(queue),
+		*NewMpeg2TSPacket(),
+		*NewPMTFrame(),
+		-1,
+		make(map[int]StreamInfo),
+		*NewDatagramPacketE(),
 	}
+}
+var done = make(chan bool)
+func main() {
+
+	//addr, _ := net.ResolveUDPAddr("udp", ":8888")
+	//sock, _ := net.ListenUDP("udp", addr)
+	var videoFrames frameQueue = *NewFrameQueue(100,UDP_SIZE)
+	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
+	var uSource UdpSource = *NewUdpSource(100, videoFrames)
+	fmt.Println("working on UDP");
+	go uSource.producer()
+	go consumer(videoFrames)
+	<-done
+	time.Sleep(1000* time.Millisecond)
 }
 
 
