@@ -175,7 +175,7 @@ func NewUdpSource(port int,queue frameQueue) * UdpSource{
 		*NewDatagramPacketE(),
 	}
 }
-var done = make(chan bool)
+var Done = make(chan bool)
 func main() {
 
 	//addr, _ := net.ResolveUDPAddr("udp", ":8888")
@@ -186,7 +186,7 @@ func main() {
 	fmt.Println("working on UDP");
 	go uSource.producer()
 	go consumer(videoFrames)
-	<-done
+	<-Done
 }
 
 

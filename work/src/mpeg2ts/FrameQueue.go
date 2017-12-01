@@ -25,19 +25,23 @@ func NewFrameQueue(capacity int, frameCapacity int) *frameQueue {
  * @return A new pre-allocated instance of type E.
  */
 func (q frameQueue) NewElement() *Frame {
-	select {
-	case tmp := <- q.queue:
-		return &tmp
-	default:
-		return nil
-	}
+	//todo - non blocking version:
+	//select {
+	//case tmp := <- q.queue:
+	//	return &tmp
+	//default:
+	//	return nil
+	//}
+
+	return q.Poll();
 }
 
 /**
  *  Wrapper around NewElement, does the same thing.
  */
 func (q frameQueue) Poll() *Frame {
-	return q.NewElement()
+	tmp := <- q.queue
+	return &tmp
 }
 
 /**

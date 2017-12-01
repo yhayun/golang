@@ -71,6 +71,7 @@ type Mpeg2TSParser struct {
 
 	 if ps.currentFrame == nil {
 		 fmt.Println("currentFrame is null")
+		 fmt.Println("--- capcity", ps.output.IsEmpty())
 		 time.Sleep(5 * time.Millisecond)
 		 return
 	 }
@@ -110,8 +111,7 @@ type Mpeg2TSParser struct {
 		 if(ps.currentFrame.IsEmpty()) {
 			 ps.currentFrame.SetCurrentSize(12);
 		 }
-		 ps.currentFrame.Append(packet.GetData(), packet.GetPayloadOffset(),
-			 packet.GetPayloadLength());
+		 ps.currentFrame.Append(packet.GetData(), packet.GetPayloadOffset(), packet.GetPayloadLength());
 		 ps.counter = (packetCounter + 1) % MAX_COUNTER;
 	 }
 
