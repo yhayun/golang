@@ -39,11 +39,13 @@ func CheckIfIFrame(buffer []byte, offset int, length int) bool {
 
 
 func consumer(videoFrames frameQueue) {
+	fmt.Println("entered consmer")
 	h264Buffer := make([]byte, 60*1024*1024)
 	var length int = 0
 	var iframeDetected bool = false
 	var numIframes int = 0
 	for {
+		fmt.Println("entered consmer loop")
 		if videoFrames.IsEmpty() {
 			time.Sleep(100 * time.Millisecond)
 			if videoFrames.IsEmpty() {
@@ -73,6 +75,7 @@ func consumer(videoFrames frameQueue) {
 		ArrayCopy(frame.GetData(),0, h264Buffer,length,frame.Size())
 		length += frame.Size()
 		videoFrames.Recylce(frame)
+		fmt.Println("left consmer loop")
 	}
 
 	///todo - this is testMP4 rest of function. for now just print what we got.
