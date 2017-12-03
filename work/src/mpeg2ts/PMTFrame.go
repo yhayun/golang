@@ -22,7 +22,7 @@ func NewPMTFrame() *PMTFrame {
 	}
 }
 
-func (pmt PMTFrame) GetStreamType(streamTypeByte byte) int {
+func (pmt *PMTFrame) GetStreamType(streamTypeByte byte) int {
 	switch streamTypeByte {
 	case 0x02:
 		return TS_STREAM_TYPE_MPEG2V;
@@ -43,24 +43,24 @@ func ArrayCopy (src []byte, srcPos int, dst []byte, dstPos int , length int) {
 	}
 }
 
-func (pmt PMTFrame) SetProgramPID(programID int) {
+func (pmt *PMTFrame) SetProgramPID(programID int) {
 	pmt.programPID = programID
 }
 
-func (pmt PMTFrame) GetProgramPID() int {
+func (pmt *PMTFrame) GetProgramPID() int {
 	return pmt.programPID
 }
 
-func (pmt PMTFrame) SetExpectedSize(expectedSize int) {
+func (pmt *PMTFrame) SetExpectedSize(expectedSize int) {
 	pmt.expectedSize = expectedSize
 }
 
-func (pmt PMTFrame) GetExpectedSize() int {
+func (pmt *PMTFrame) GetExpectedSize() int {
 	return pmt.expectedSize
 }
 
 
-func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
+func (pmt *PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
 	if p.GetType() != Mpeg2TSPacketType_PMT {
 		return false
 	}
@@ -90,12 +90,12 @@ func (pmt PMTFrame) AddPacket(p Mpeg2TSPacket) bool {
 	return false
 }
 
-func (pmt PMTFrame) GetPcrPID() int {
+func (pmt *PMTFrame) GetPcrPID() int {
 	var pcrPID int = ((int)((pmt.data[9] & 0x1F) << 8) & 0x0000ffff) + (int)(pmt.data[10] & 0x00ff)
 	return pcrPID
 }
 
-func (pmt PMTFrame) GetStreamInfos() map[int]StreamInfo {
+func (pmt *PMTFrame) GetStreamInfos() map[int]StreamInfo {
 	var result = make(map[int]StreamInfo)
 	var offset  = 2
 	var programMapSectionLength int = ((int)(pmt.data[offset]&0x0f) <<8) + (int)(pmt.data[offset+1])

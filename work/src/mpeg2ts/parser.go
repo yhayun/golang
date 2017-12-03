@@ -29,14 +29,14 @@ type Mpeg2TSParser struct {
 	 }
  }
 
- func (ps Mpeg2TSParser) GetPreviousCounter(counter int) int{
+ func (ps *Mpeg2TSParser) GetPreviousCounter(counter int) int{
 	if counter == 0 {
 		return 15
 	}
 	return counter - 1
  }
 
- func (ps Mpeg2TSParser) Close() {
+ func (ps *Mpeg2TSParser) Close() {
 	ps.endFlag = true;
  }
 
@@ -44,13 +44,13 @@ type Mpeg2TSParser struct {
 /**
 * Deletes the content of the current frame and recycles it.
 */
- func (ps Mpeg2TSParser) Flush() {
+ func (ps *Mpeg2TSParser) Flush() {
 	ps.output.Recylce(ps.currentFrame)
 	ps.currentFrame = nil
  }
 
 
- func (ps Mpeg2TSParser) Write(packet Mpeg2TSPacket) {
+ func (ps *Mpeg2TSParser) Write(packet Mpeg2TSPacket) {
  	var packetCounter int =  packet.GetContinuityCounter()
 	 if !packet.IsPayloadExist() {
 		 fmt.Println("Payload doens't exist")
@@ -102,7 +102,7 @@ type Mpeg2TSParser struct {
 		 ps.currentFrame.SetPTS(packet.GetPTS()/90)
 
 	 } else if (ps.currentFrame.IsEmpty() || packetCounter != ps.counter) {
-		 fmt.Println("Continuity = ", packetCounter," counter = ", ps.counter);
+		 //fmt.Println("Continuity = ", packetCounter," counter = ", ps.counter);
 		 ps.counter = (packetCounter + 1) % MAX_COUNTER;
 		 return;
 	 }

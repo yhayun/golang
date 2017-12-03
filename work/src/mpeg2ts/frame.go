@@ -18,14 +18,14 @@ func NewFrame(capacity int) *Frame {
 /**
  * @return A reference to the underlying byte array.
  */
- func (f Frame) GetData() []byte {
+ func (f *Frame) GetData() []byte {
  	return f.data
  }
 
 /**
 * Clears the content of this Frame.
 */
-func ( f Frame) Clear() {
+func ( f *Frame) Clear() {
 	f.offset = 0
 }
 
@@ -39,7 +39,7 @@ func ( f Frame) Clear() {
  * @param limit
  *            The number of bytes to copy from buf
  */
- func (f Frame) Append (buf []byte, offset int ,limit int ) {
+ func (f *Frame) Append (buf []byte, offset int ,limit int ) {
 	for i:= 0; i < limit && f.offset < len(f.data); i++ {
 		f.data[f.offset] = buf[offset  + i]
 		f.offset++
@@ -53,7 +53,7 @@ func ( f Frame) Clear() {
  * @param data
  *            The byte array to copy
  */
- func ( f Frame) SetData(data []byte) {
+ func ( f *Frame) SetData(data []byte) {
  	f.Clear()
  	f.Append(data, 0, len(data))
  }
@@ -62,7 +62,7 @@ func ( f Frame) Clear() {
 /**
  * @return The PTS of the Frame.
  */
- func (f Frame) GetPTS () long {
+ func (f *Frame) GetPTS () long {
  	return f.pts
  }
 
@@ -71,7 +71,7 @@ func ( f Frame) Clear() {
  * @param pts
  *            The PTS of the Frame.
  */
- func (f Frame) SetPTS(pts long) {
+ func (f *Frame) SetPTS(pts long) {
  	f.pts = pts
  }
 
@@ -80,25 +80,25 @@ func ( f Frame) Clear() {
 /**
  * @return true if this Frame is empty, false otherwise.
  */
- func (f Frame) IsEmpty() bool {
+ func (f *Frame) IsEmpty() bool {
  	return f.offset == 0
  }
 
 /**
  * @return The size of the data wrapped by this Frame (in bytes).
  */
-func (f Frame) Size() int {
+func (f *Frame) Size() int {
 	return f.offset
 }
 
-func ( f Frame) SetCurrentSize( size int) {
+func ( f *Frame) SetCurrentSize( size int) {
 	f.offset = size
 }
 
 /**
  * @return The capacity of this Frame.
  */
- func (f Frame) Capacity() int {
+ func (f *Frame) Capacity() int {
  	return len(f.data)
  }
 

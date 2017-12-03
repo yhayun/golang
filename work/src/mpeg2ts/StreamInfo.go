@@ -21,7 +21,7 @@ func NewStreamInfo(capacity int) *StreamInfo {
 	return &StreamInfo{}
 }
 
-func ( s StreamInfo) ToString() string{
+func ( s *StreamInfo) ToString() string{
 	 res := fmt.Sprintf( "Type: %d , PID: %d",s.streamType, s.streamPID)
 
 	 return res
