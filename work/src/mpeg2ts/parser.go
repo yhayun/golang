@@ -22,6 +22,7 @@ type Mpeg2TSParser struct {
 	 return &Mpeg2TSParser{
 		 counter: -1,
 		 lastFrameTime: 0,
+		 currentFrame: nil,
 		 iFrameFound: false,
 		 endFlag: false,
 		 output: output,
