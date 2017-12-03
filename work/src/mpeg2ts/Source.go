@@ -147,6 +147,7 @@ func (u* UdpSource) producer() { // equivalent
 			firstPacket = false
 		}
 		var pgPacket = NewDatagramPacket(buffer, rlen)
+		fmt.Println(buffer[:30])
 		u.extractStreams(*pgPacket)
 	}
 	fmt.Println("exited loop")
