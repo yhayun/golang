@@ -136,7 +136,6 @@ func (u* UdpSource) producer() { // equivalent
 	fmt.Println("Entered Producer")
 
 	for u.endFlag != true {
-		fmt.Println("-----:: ", u.videoTSParser.tester)
 		rlen, _, err := u.socket.ReadFromUDP(buffer)
 		if err != nil {
 			fmt.Println("No packet received")

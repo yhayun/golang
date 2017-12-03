@@ -109,12 +109,11 @@ type Mpeg2TSParser struct {
 
 
 	 if (packet.IsPayloadExist()) {
-	 	fmt.Println("TEST - append")
 		 if(ps.currentFrame.IsEmpty()) {
 			 ps.currentFrame.SetCurrentSize(12);
 		 }
 		 ps.currentFrame.Append(packet.GetData(), packet.GetPayloadOffset(), packet.GetPayloadLength());
 		 ps.counter = (packetCounter + 1) % MAX_COUNTER;
 	 }
-	 fmt.Println("frame:", ps.currentFrame.data[:180]," ps.counter: ", ps.counter)
+	 //fmt.Println("frame:", ps.currentFrame.data[:180]," ps.counter: ", ps.counter)
  }
