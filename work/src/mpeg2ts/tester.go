@@ -81,7 +81,9 @@ func consumer(videoFrames frameQueue) {
 	}
 	fmt.Println("left consumer loop.")
 	///todo - this is testMP4 rest of function. for now just print what we got.
-	fmt.Println(h264Buffer)
+	//fmt.Println(h264Buffer)
+	first_100 := h264Buffer[:100]
+	fmt.Println(first_100)
 	Done <- true
 	//WriteFile(h264Buffer,"tempfile.txt");
 }
