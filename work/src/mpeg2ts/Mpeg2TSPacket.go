@@ -156,7 +156,7 @@ func GetContinuityCounter(buffer []byte , offset int) int {
 	return counter
 }
 
-func (tsP Mpeg2TSPacket) GetContinuityCounter() int {
+func (tsP* Mpeg2TSPacket) GetContinuityCounter() int {
 	return tsP.continuityCounter
 }
 
@@ -171,7 +171,7 @@ func IsStart(tsPacket []byte, offset int) bool {
 	return (tsPacket[1 + offset] & 0x40) != 0;
 }
 
-func (tsP Mpeg2TSPacket) IsStart() bool{
+func (tsP* Mpeg2TSPacket) IsStart() bool{
 	return tsP.start
 }
 
@@ -189,15 +189,15 @@ func GetPMTLength(buffer []byte, offset int) int{
 	return pmtSectionLength + 3;
 }
 
-func (tsP Mpeg2TSPacket) GetPMTLength() int{
+func (tsP* Mpeg2TSPacket) GetPMTLength() int{
 	return tsP.pmtLength
 }
 
-func (tsP Mpeg2TSPacket) GetDataOffset() int{
+func (tsP* Mpeg2TSPacket) GetDataOffset() int{
 	return tsP.dataOffset
 }
 
-func (tsP Mpeg2TSPacket) GetDataLength() int{
+func (tsP* Mpeg2TSPacket) GetDataLength() int{
 	return tsP.dataLength
 }
 
@@ -223,11 +223,11 @@ func GetPayloadOffset(buffer []byte, offset int) int{
 	return internalOffset;
 }
 
-func (tsP Mpeg2TSPacket) GetPayloadOffset() int {
+func (tsP* Mpeg2TSPacket) GetPayloadOffset() int {
 	return tsP.payloadOffset
 }
 
-func (tsP Mpeg2TSPacket) GetPayloadLength() int {
+func (tsP* Mpeg2TSPacket) GetPayloadLength() int {
 	return tsP.payloadLength
 }
 
@@ -251,7 +251,7 @@ func GetPTS(buffer []byte, offset int) long {
 	return pts;
 }
 
-func (tsP Mpeg2TSPacket) GetPTS() long {
+func (tsP* Mpeg2TSPacket) GetPTS() long {
 	return tsP.pts
 }
 
