@@ -81,16 +81,16 @@ func (tsP* Mpeg2TSPacket) FromBytes(data []byte, offset int, programPID int) {
 	//TODO PCR ignored
 
 	if tsP.pid == 0 {
-		tsP.Mpeg2TSPacketType = 0
+		tsP.Mpeg2TSPacketType = Mpeg2TSPacketType_PAT
 		tsP.programPID = GetProgramPID(data, offset);
 	} else if (tsP.pid == programPID) {
-		tsP.Mpeg2TSPacketType = 1
+		tsP.Mpeg2TSPacketType = Mpeg2TSPacketType_PMT
 		tsP.start = IsStart(data, offset);
 		if (tsP.start) {
 			tsP.pmtLength = GetPMTLength(data, offset);
 		}
 	} else {
-		tsP.Mpeg2TSPacketType = 2
+		tsP.Mpeg2TSPacketType = Mpeg2TSPacketType_PES
 		tsP.startOfPES = IsStartOfPES(data, offset);
 		tsP.payloadExist = PayloadExists(data, offset);
 		if (tsP.payloadExist) {
