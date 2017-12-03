@@ -91,7 +91,6 @@ func (u* UdpSource) extractStreams(packet DatagramPacket) {
 				u.pmtFrame = *NewPMTFrame();
 				u.detectFlag = false;
 			}
-
 		}
 
 		if (u.detectFlag) {

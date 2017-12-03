@@ -52,7 +52,6 @@ type Mpeg2TSParser struct {
 
  func (ps Mpeg2TSParser) Write(packet Mpeg2TSPacket) {
  	var packetCounter int =  packet.GetContinuityCounter()
-	 //fmt.Println("TEST - write")
 	 if !packet.IsPayloadExist() {
 		 fmt.Println("Payload doens't exist")
 		 return
@@ -103,9 +102,11 @@ type Mpeg2TSParser struct {
 		 ps.currentFrame.SetPTS(packet.GetPTS()/90)
 
 	 } else if (ps.currentFrame.IsEmpty() || packetCounter != ps.counter) {
+		 fmt.Println("Continuity = ", packetCounter," counter = ", ps.counter);
 		 ps.counter = (packetCounter + 1) % MAX_COUNTER;
 		 return;
 	 }
+
 
 	 if (packet.IsPayloadExist()) {
 	 	fmt.Println("TEST - append")
@@ -115,5 +116,5 @@ type Mpeg2TSParser struct {
 		 ps.currentFrame.Append(packet.GetData(), packet.GetPayloadOffset(), packet.GetPayloadLength());
 		 ps.counter = (packetCounter + 1) % MAX_COUNTER;
 	 }
-
+	 fmt.Println("frame:", ps.currentFrame.data[:180]," ps.counter: ", ps.counter)
  }
