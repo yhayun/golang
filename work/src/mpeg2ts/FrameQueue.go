@@ -36,6 +36,7 @@ func (q frameQueue) NewElement() *Frame {
 	return q.Poll();
 }
 
+
 /**
  *  Wrapper around NewElement, does the same thing.
  */

@@ -147,14 +147,14 @@ func (u* UdpSource) producer() { // equivalent
 			firstPacket = false
 		}
 		var pgPacket = NewDatagramPacket(buffer, rlen)
-		fmt.Println(buffer[:30])
+		//fmt.Println(buffer[:30])
 		u.extractStreams(*pgPacket)
 	}
 	fmt.Println("exited loop")
 	//todo clean socket
 	defer u.socket.Close();
 }
-//server code:   //extractstrean() code
+
 
 func NewMpeg2TSSource(port int,queue frameQueue) *Mpeg2TSSource {
 	//addr, _ := net.ResolveUDPAddr("udp", ":"+string(port))
