@@ -126,7 +126,7 @@ func (_this *MP4Remuxer) Remux(videoTrack VideoTrack, timeOffset uint, contiguou
 		//} else {
 		var videoData VideoData
 		//logger.log('nb AVC samples:' + videoTrack.samples.length);
-		if (nbVideoSamples) {
+		if nbVideoSamples != 0 {
 			videoData = _this.RemuxVideo(videoTrack, videoTimeOffset, contiguous, accurateTimeOffset);
 		}
 		//if (videoData && audioTrack.codec) {
@@ -143,11 +143,11 @@ func (_this *MP4Remuxer) Remux(videoTrack VideoTrack, timeOffset uint, contiguou
 	//  this.remuxText(textTrack,timeOffset);
 	//}
 	//notify end of parsing
-	_this.observer.trigger(Event.FRAG_PARSED);
+	//_this.observer.trigger(Event.FRAG_PARSED); todo observer
 }
 
 func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
-	var observer = _this.observer
+	//var observer = _this.observer  //todo observer
 	//audioSamples = audioTrack.samples,
 	var videoSamples = videoTrack.samples
 	var typeSupported = _this.typeSupported
@@ -161,12 +161,12 @@ func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
 		tracks
 	}
 	var computePTSDTS = (_this._initPTS == undefined)
-	var initPTS int
-	var initDTS int
+	var initPTS float64
+	var initDTS float64
 
 	if (computePTSDTS) {
-		initPTS = MaxInt
-		initDTS = MaxInt
+		initPTS = math.MaxFloat64
+		initDTS = math.MaxFloat64
 	}
 	//if (audioTrack.config && audioSamples.length) { todo no audio samples => always false
 	//  // let's use audio sampling rate as MP4 time scale.
@@ -198,13 +198,12 @@ func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
 	//  }todo maybe this is relevant
 	//}
 
-	if (videoTrack.sps && videoTrack.pps && videoSamples.length) {
+	if (videoTrack.sps !=0 && videoTrack.pps!=0 && len(videoSamples)!=0) {
 		// let's use input time scale as MP4 video timescale
 		// we use input time scale straight away to avoid rounding issues on frame duration / cts computation
-		const inputTimeScale = videoTrack.inputTimeScale
-		videoTrack.timescale = inputTimeScale
-		tracks.video =
-		{
+		var inputTimeScale = videoTrack.inputTimeScale
+		videoTrack.timescale = int(inputTimeScale)
+		tracks.video =Video{
 		container:
 			"video/mp4",
 				codec :  videoTrack.codec,
