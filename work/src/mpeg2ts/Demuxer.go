@@ -10,8 +10,9 @@ type Unit struct {
 
 type Sample struct {
 	units []Unit
-	pts int
-	dts int
+	pts float64
+	dts float64
+	length int
 }
 
 type Config struct {

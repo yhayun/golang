@@ -1,9 +1,11 @@
 package main
 
-import "sort"
-{
-"math"
-}
+import (
+	"sort"
+	"math"
+	"encoding/binary"
+)
+
 type VideoData struct {
 	data1    []byte //moof
 	data2    []byte //mdat
@@ -16,8 +18,23 @@ type VideoData struct {
 
 const MaxInt = int(^uint(0) >> 1)
 
-func PTSNormalize(value int, reference *int) int {
-	var offset
+type Flags struct {
+	isLeading int//: 0,
+	isDependedOn int//: 0,
+	hasRedundancy int//: 0,
+	degradPrio int//: 0,
+	dependsOn int//: 1,
+}
+type Mp4Sample struct {
+	size int// unitLen,
+	cts int //0,
+	duration int// : 0,
+	flags Flags
+
+}
+
+func PTSNormalize(value float64, reference *float64) float64 {
+	var offset float64
 	if (reference == nil) {
 		return value;
 	}
@@ -31,7 +48,7 @@ func PTSNormalize(value int, reference *int) int {
 	/* PTS is 33bit (from 0 to 2^33 -1)
 	  if diff between value and reference is bigger than half of the amplitude (2^32) then it means that
 	  PTS looping occured. fill the gap */
-	for ; (Math.Abs(value - *reference) > 4294967296); {
+	for ; (math.Abs(value - *reference) > 4294967296); {
 		value += offset;
 	}
 	return value;
@@ -47,7 +64,7 @@ type MP4Remuxer struct {
 	_initPTS      int
 	_initDTS      int
 	_PTSNormalize int
-	nextAvcDts    *int
+	nextAvcDts    *float64
 	ISGenerated   bool //= false;
 }
 
@@ -73,8 +90,8 @@ func (_this *MP4Remuxer) Remux(videoTrack VideoTrack, timeOffset uint, contiguou
 		//  // when providing timeOffset to remuxAudio / remuxVideo. if we don't do that, there might be a permanent / small
 		//  // drift between audio and video streams
 		//  let audiovideoDeltaDts = (audioTrack.samples[0].dts - videoTrack.samples[0].dts)/videoTrack.inputTimeScale;
-		//  audioTimeOffset += Math.max(0,audiovideoDeltaDts);
-		//  videoTimeOffset += Math.max(0,-audiovideoDeltaDts);
+		//  audioTimeOffset += math.max(0,audiovideoDeltaDts);
+		//  videoTimeOffset += math.max(0,-audiovideoDeltaDts);
 		//}  todo we don't need this crap, we only stream video
 
 		// Purposefully remuxing audio before video, so that remuxVideo can use nextAudioPts, which is
@@ -192,8 +209,8 @@ func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
 		}
 		};
 		if (computePTSDTS) {
-			initPTS = Math.min(initPTS, videoSamples[0].pts-inputTimeScale*timeOffset);
-			initDTS = Math.min(initDTS, videoSamples[0].dts-inputTimeScale*timeOffset);
+			initPTS = math.Min(initPTS, videoSamples[0].pts-inputTimeScale*timeOffset);
+			initDTS = math.Min(initDTS, videoSamples[0].dts-inputTimeScale*timeOffset);
 			this.observer.trigger(Event.INIT_PTS_FOUND,
 			{
 			initPTS:
@@ -248,16 +265,16 @@ func (s byHarta) Less(i, j int) bool {
 func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=0*/ , accurateTimeOffset int /*=0*/) {
 	var offset = 8
 	var timeScale = track.timescale
-	//var mp4SampleDuration
-	//var mdat
-	//var moof
-	//var firstPTS
-	//var firstDTS
-	//var nextDTS
-	//var lastPTS
-	//var lastDTS
+	var mp4SampleDuration
+	var mdat
+	var moof
+	var firstPTS
+	var firstDTS
+	var nextDTS
+	var lastPTS
+	var lastDTS
 	var inputSamples = track.samples
-	var outputSamples []Sample
+	var outputSamples []Mp4Sample
 	var nbSamples = len(inputSamples)
 	//var ptsNormalize = _this._PTSNormalize
 	var initDTS = _this._initDTS
@@ -288,8 +305,8 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	////  - less than 100ms gaps between new time offset (if accurate) and next expected PTS OR
 	////  - less than 200 ms PTS gaps (timeScale/5)
 	//contiguous |= (inputSamples.length && nextAvcDts &&
-	//((accurateTimeOffset && Math.abs(timeOffset-nextAvcDts/timeScale) < 0.1) ||
-	//Math.abs((inputSamples[0].pts-nextAvcDts-initDTS)) < timeScale/5)
+	//((accurateTimeOffset && math.abs(timeOffset-nextAvcDts/timeScale) < 0.1) ||
+	//math.abs((inputSamples[0].pts-nextAvcDts-initDTS)) < timeScale/5)
 	//);
 	//}
 
@@ -318,174 +335,159 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	sort.Sort(byHarta(inputSamples))
 
 	// handle broken streams with PTS < DTS, tolerance up 200ms (18000 in 90kHz timescale)
-	let
-	PTSDTSshift = inputSamples.reduce((prev, curr) = > Math.max(Math.min(prev, curr.pts-curr.dts), -18000), 0);
+	var PTSDTSshift = 0.
+	for i:= 1; i< len(inputSamples); i++ {
+		PTSDTSshift = PTSDTSshift + math.Max(math.Min(inputSamples[i-1], inputSamples[i].pts-inputSamples[i].dts), -18000)
+	}
 	if (PTSDTSshift < 0) {
-		logger.warn(`PTS < DTS detected in video samples, shifting DTS by ${Math.round(PTSDTSshift/90)} ms to overcome this issue`);
-		for
-		(let
-		i = 0;
-		i < inputSamples.length;
-		i++) {
-		inputSamples[i].dts += PTSDTSshift;
+		//logger.warn(`PTS < DTS detected in video samples, shifting DTS by ${math.round(PTSDTSshift/90)} ms to overcome this issue`);
+		for i := 0; i < len(inputSamples);i++ {
+			inputSamples[i].dts += PTSDTSshift;
 		}
 	}
 
 	// compute first DTS and last DTS, normalize them against reference value
-	let
-	sample = inputSamples[0];
-	firstDTS = Math.max(sample.dts, 0);
-	firstPTS = Math.max(sample.pts, 0);
+	var sample = inputSamples[0];
+	firstDTS = math.Max(float64(sample.dts), 0);
+	firstPTS = math.Max(float64(sample.dts), 0);
 
-	// check timestamp continuity accross consecutive fragments (this is to remove inter-fragment gap/hole)
-	let
-	delta = Math.round((firstDTS - nextAvcDts) / 90);
+	// check timestamp continuity accross consecutive fragments (this is to remove inter-fragment gap/hole
+	var delta = math.Round((firstDTS - float64(*nextAvcDts)) / 90);
 	// if fragment are contiguous, detect hole/overlapping between fragments
-	if (contiguous) {
+	if (contiguous != 0) {
 		if (delta) {
 			if (delta > 1) {
-				logger.log(`AVC:${delta} ms hole between fragments detected,filling it`);
+				//logger.log(`AVC:${delta} ms hole between fragments detected,filling it`);
 			} else if (delta < -1) {
-				logger.log(`AVC:${(-delta)} ms overlapping between fragments detected`);
+				//logger.log(`AVC:${(-delta)} ms overlapping between fragments detected`);
 			}
 			// remove hole/gap : set DTS to next expected DTS
-			firstDTS = nextAvcDts;
+			firstDTS = *nextAvcDts;
 			inputSamples[0].dts = firstDTS;
 			// offset PTS as well, ensure that PTS is smaller or equal than new DTS
-			firstPTS = Math.max(firstPTS-delta, nextAvcDts);
+			firstPTS = math.Max(firstPTS-delta, *nextAvcDts);
 			inputSamples[0].pts = firstPTS;
-			logger.log(`Video/PTS/DTS adjusted: ${Math.round(firstPTS/90)}/${Math.round(firstDTS/90)},delta:${delta} ms`);
+			//logger.log(`Video/PTS/DTS adjusted: ${math.round(firstPTS/90)}/${math.round(firstDTS/90)},delta:${delta} ms`);
 		}
 	}
-	nextDTS = firstDTS;
+	nextDTS = firstDTS
 
 	// compute lastPTS/lastDTS
-	sample = inputSamples[inputSamples.length-1];
-	lastDTS = Math.max(sample.dts, 0);
-	lastPTS = Math.max(sample.pts, 0, lastDTS);
+	sample = inputSamples[len(inputSamples)-1];
+	lastDTS = math.Max(sample.dts, 0);
+	lastPTS = math.Max(sample.pts, 0, lastDTS);
 
 	// on Safari let's signal the same sample duration for all samples
 	// sample duration (as expected by trun MP4 boxes), should be the delta between sample DTS
 	// set this constant duration as being the avg delta between consecutive DTS.
-	if (isSafari) {
-		mp4SampleDuration = Math.round((lastDTS - firstDTS) / (inputSamples.length - 1));
-	}
+	//if (isSafari) {
+	//	mp4SampleDuration = math.round((lastDTS - firstDTS) / (inputSamples.length - 1));
+	//}
 
-	let
-	nbNalu = 0, naluLen = 0;
-	for
-	(let
-	i = 0;
-	i < nbSamples;
-	i++) {
+	var nbNalu = 0
+	var naluLen = 0
+	for i := 0;	i < nbSamples; i++ {
 	// compute total/avc sample length and nb of NAL units
-	let sample = inputSamples[i], units = sample.units, nbUnits = units.length, sampleLen = 0;
-	for (let j = 0; j < nbUnits; j++) {
-	sampleLen += units[j].data.length;
+	var sample = inputSamples[i]
+	var units = sample.units
+	var nbUnits = len(units)
+	var sampleLen = 0
+	for j := 0; j < nbUnits; j++ {
+	sampleLen += len(units[j].data)
 	}
 	naluLen += sampleLen;
 	nbNalu += nbUnits;
 	sample.length = sampleLen;
 
 	// normalize PTS/DTS
-	if (isSafari) {
-	// sample DTS is computed using a constant decoding offset (mp4SampleDuration) between samples
-	sample.dts = firstDTS + i*mp4SampleDuration;
-	} else {
+	//if (isSafari) {
+	//// sample DTS is computed using a constant decoding offset (mp4SampleDuration) between samples
+	//sample.dts = firstDTS + i*mp4SampleDuration;
+	//} else {
 	// ensure sample monotonic DTS
-	sample.dts = Math.max(sample.dts, firstDTS);
-	}
+	sample.dts = math.Max(sample.dts, firstDTS);
+	//}
 	// ensure that computed value is greater or equal than sample DTS
-	sample.pts = Math.max(sample.pts, sample.dts);
+	sample.pts = math.Max(sample.pts, sample.dts);
 	}
 
 	/* concatenate the video data and construct the mdat in place
 	  (need 8 more bytes to fill length and mpdat type) */
-	let
-	mdatSize = naluLen + (4 * nbNalu) + 8;
-	try{
-		mdat = new Uint8Array(mdatSize);
-	}
-	catch(err)
-	{
-		this.observer.trigger(Event.ERROR,
-		{
-			type: ErrorTypes.MUX_ERROR, details: ErrorDetails.REMUX_ALLOC_ERROR, fatal: false, bytes : mdatSize, reason: `fail allocating video mdat ${mdatSize}`
-		});
-		return;
-	}
-	let
-	view = new
-	DataView(mdat.buffer);
-	view.setUint32(0, mdatSize);
-	mdat.set(MP4.types.mdat, 4);
-	for
-	(let
-	i = 0;
-	i < nbSamples;
-	i++) {
-	let avcSample = inputSamples[i],
-	avcSampleUnits = avcSample.units,
-	mp4SampleLength = 0,
-	compositionTimeOffset;
+	var mdatSize = naluLen + (4 * nbNalu) + 8;
+	mdat= new([mdatSize]byte)
+	binary.BigEndian.PutUint32(mdat, mdatSize);
+	ArrayCopy(MP4.types.mdat,0, mdat,	4 , len(MP4.types.mdat))//todo implement MP$-generator
+	for	i := 0;	i < nbSamples; i++ {
+		var avcSample= inputSamples[i]
+		var avcSampleUnits= avcSample.units
+		var mp4SampleLength= 0
+		var compositionTimeOffset
+
 	// convert NALU bitstream to MP4 format (prepend NALU with size field)
-	for (let j = 0, nbUnits = avcSampleUnits.length; j < nbUnits; j++) {
-	let unit = avcSampleUnits[j],
-	unitData = unit.data,
-	unitDataLen = unit.data.byteLength;
-	view.setUint32(offset, unitDataLen);
+	nbUnits := len(avcSampleUnits)
+	for j := 0; j < nbUnits; j++ {
+	var unit = avcSampleUnits[j]
+	var unitData = unit.data
+	var unitDataLen = len(unit.data)
+	binary.BigEndian.PutUint32(mdat[offset:], uint32(unitDataLen));
 	offset += 4;
-	mdat.set(unitData, offset);
+	ArrayCopy(unitData,0, mdat, offset, unitDataLen) //mdat.set(unitData, offset);
 	offset += unitDataLen;
 	mp4SampleLength += 4 + unitDataLen;
 	}
 
-	if (!isSafari) {
+	//if (!isSafari) {//todo never safari
 	// expected sample duration is the Decoding Timestamp diff of consecutive samples
 	if (i < nbSamples - 1) {
 	mp4SampleDuration = inputSamples[i+1].dts - avcSample.dts;
 	} else {
-	let config = this.config,
-	lastFrameDuration = avcSample.dts - inputSamples[i > 0 ? i-1: i].dts;
-	if (config.stretchShortVideoTrack) {
-	// In some cases, a segment's audio track duration may exceed the video track duration.
-	// Since we've already remuxed audio, and we know how long the audio track is, we look to
-	// see if the delta to the next segment is longer than the minimum of maxBufferHole and
-	// maxSeekHole. If so, playback would potentially get stuck, so we artificially inflate
-	// the duration of the last frame to minimize any potential gap between segments.
-	let maxBufferHole = config.maxBufferHole,
-	maxSeekHole = config.maxSeekHole,
-	gapTolerance = Math.floor(Math.min(maxBufferHole, maxSeekHole) * timeScale),
-	deltaToFrameEnd = (audioTrackLength ? firstPTS + audioTrackLength * timeScale: this.nextAudioPts) - avcSample.pts;
-	if (deltaToFrameEnd > gapTolerance) {
-	// We subtract lastFrameDuration from deltaToFrameEnd to try to prevent any video
-	// frame overlap. maxBufferHole/maxSeekHole should be >> lastFrameDuration anyway.
-	mp4SampleDuration = deltaToFrameEnd - lastFrameDuration;
-	if (mp4SampleDuration < 0) {
-	mp4SampleDuration = lastFrameDuration;
+	var config = _this.config
+	var tempIndex
+	if i>0 {
+		tempIndex = i-1
+	}else{
+		i
 	}
-	logger.log(`It is approximately ${deltaToFrameEnd/90} ms to the next segment; using duration ${mp4SampleDuration/90} ms for the last video frame.`);
-	} else {
-	mp4SampleDuration = lastFrameDuration;
+	var lastFrameDuration = avcSample.dts - inputSamples[tempIndex].dts;
+	//if (config.stretchShortVideoTrack) {
+	//// In some cases, a segment's audio track duration may exceed the video track duration.
+	//// Since we've already remuxed audio, and we know how long the audio track is, we look to
+	//// see if the delta to the next segment is longer than the minimum of maxBufferHole and
+	//// maxSeekHole. If so, playback would potentially get stuck, so we artificially inflate
+	//// the duration of the last frame to minimize any potential gap between segments.
+	//var maxBufferHole = config.maxBufferHole
+	//var maxSeekHole = config.maxSeekHole
+	//var gapTolerance = math.Floor(math.Min(maxBufferHole, maxSeekHole) * timeScale)
+	//var deltaToFrameEnd
+	//deltaToFrameEnd = _this.nextAudioPts) - avcSample.pts
+	//
+	//if (deltaToFrameEnd > gapTolerance) {
+	//// We subtract lastFrameDuration from deltaToFrameEnd to try to prevent any video
+	//// frame overlap. maxBufferHole/maxSeekHole should be >> lastFrameDuration anyway.
+	//mp4SampleDuration = deltaToFrameEnd - lastFrameDuration;
+	//if (mp4SampleDuration < 0) {
+	//mp4SampleDuration = lastFrameDuration;
+	//}
+	//logger.log(`It is approximately ${deltaToFrameEnd/90} ms to the next segment; using duration ${mp4SampleDuration/90} ms for the last video frame.`);
+	//} else {
+	//mp4SampleDuration = lastFrameDuration;
+	//}
+	//} else {
+	//mp4SampleDuration = lastFrameDuration;
+	//}
 	}
-	} else {
-	mp4SampleDuration = lastFrameDuration;
-	}
-	}
-	compositionTimeOffset = Math.round(avcSample.pts - avcSample.dts);
-	} else {
-	compositionTimeOffset = Math.max(0, mp4SampleDuration*Math.round((avcSample.pts - avcSample.dts)/mp4SampleDuration));
-	}
+	compositionTimeOffset = math.Round(avcSample.pts - avcSample.dts);
+	//} else {//todo never safari
+	//compositionTimeOffset = math.max(0, mp4SampleDuration*math.round((avcSample.pts - avcSample.dts)/mp4SampleDuration));
+	//}
 
 
 	//console.log('PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)}');
-	outputSamples.push({
-	size: mp4SampleLength,
+	outputSamples = append(outputSamples,Mp4Sample{size: mp4SampleLength,
 	// constant duration
 	duration: mp4SampleDuration,
 	cts: compositionTimeOffset,
-	flags: {
-	isLeading: 0,
+	Flags{isLeading: 0,
 	isDependedOn: 0,
 	hasRedundancy: 0,
 	degradPrio: 0,
@@ -495,9 +497,8 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	});
 	}
 	// next AVC sample DTS should be equal to last sample DTS + last sample duration (in PES timescale)
-	this.nextAvcDts = lastDTS + mp4SampleDuration;
-	let
-	dropped = track.dropped;
+	_this.nextAvcDts = lastDTS + mp4SampleDuration;
+	var dropped = track.dropped;
 	track.len = 0;
 	track.nbNalu = 0;
 	track.dropped = 0;
