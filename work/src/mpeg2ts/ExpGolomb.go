@@ -17,6 +17,7 @@ func min(x uint, y uint) uint {
 	return x
 }
 
+
 type ExpGolomb struct {
 	data []byte
 	bytesAvailable uint

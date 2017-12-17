@@ -24,13 +24,19 @@ type Flags struct {
 	hasRedundancy int//: 0,
 	degradPrio int//: 0,
 	dependsOn int//: 1,
+	isNonSync int// :1,
 }
+
 type Mp4Sample struct {
 	size int// unitLen,
 	cts int //0,
 	duration int// : 0,
 	flags Flags
 
+}
+
+func Round(num float64) int64 {
+	return int64(num + 0.5)
 }
 
 func PTSNormalize(value float64, reference *float64) float64 {
@@ -476,25 +482,45 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	//mp4SampleDuration = lastFrameDuration;
 	//}
 	}
-	compositionTimeOffset = math.Round(avcSample.pts - avcSample.dts);
+	compositionTimeOffset = Round(avcSample.pts - avcSample.dts)
 	//} else {//todo never safari
 	//compositionTimeOffset = math.max(0, mp4SampleDuration*math.round((avcSample.pts - avcSample.dts)/mp4SampleDuration));
 	//}
 
+	var sample Mp4Sample
 
-	//console.log('PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)}');
-	outputSamples = append(outputSamples,Mp4Sample{size: mp4SampleLength,
-	// constant duration
-	duration: mp4SampleDuration,
-	cts: compositionTimeOffset,
-	Flags{isLeading: 0,
-	isDependedOn: 0,
-	hasRedundancy: 0,
-	degradPrio: 0,
-	dependsOn: avcSample.key ? 2: 1,
-	isNonSync: avcSample.key ? 0: 1
+	if (avcSample.key) {
+		sample = Mp4Sample{
+			mp4SampleLength,
+			compositionTimeOffset,
+			-1,
+			Flags{
+				0,
+				0,
+				0,
+				0,
+				2,
+				0,
+			},
+		}
+	} else {
+		sample = Mp4Sample{
+			mp4SampleLength,
+			compositionTimeOffset,
+			-1,
+			Flags{
+				0,
+				0,
+				0,
+				0,
+				1,
+				1,
+			},
+		}
 	}
-	});
+
+	outputSamples = append(outputSamples,sample)
+
 	}
 	// next AVC sample DTS should be equal to last sample DTS + last sample duration (in PES timescale)
 	_this.nextAvcDts = lastDTS + mp4SampleDuration;
