@@ -26,7 +26,7 @@ type VideoTrack struct {
 	id uint
 	pid uint
 	inputTimeScale uint
-	timeScale int
+	timescale int
 	sequenceNumber uint
 	samples []Sample
 	len uint
