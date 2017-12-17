@@ -181,7 +181,7 @@ func main() {
 
 	//addr, _ := net.ResolveUDPAddr("udp", ":8888")
 	//sock, _ := net.ListenUDP("udp", addr)
-	var videoFrames frameQueue = *NewFrameQueue(100,UDP_SIZE)
+	var videoFrames frameQueue = *NewFrameQueue(100,UDP_SIZE*50)
 	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
 	var uSource UdpSource = *NewUdpSource(100, videoFrames)
 	fmt.Println("working on UDP");

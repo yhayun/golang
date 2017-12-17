@@ -42,7 +42,7 @@ func consumer(videoFrames frameQueue) {
 	h264Buffer := make([]byte, 60*1024*1024)
 	var length int = 0
 	var iframeDetected bool = false
-	var numIframes int = 0
+	//var numIframes int = 0
 	for {
 		//fmt.Println("entered consmer loop")
 		if videoFrames.IsEmpty() {
@@ -65,24 +65,19 @@ func consumer(videoFrames frameQueue) {
 				continue
 			}
 		}
-		if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
-			numIframes++
-		}
-		if numIframes >= 2 {
-			videoFrames.Recylce(frame)
-			continue
-		}
+
 
 		ArrayCopy(frame.GetData(),0, h264Buffer,length,frame.Size())
 		length += frame.Size()
 		videoFrames.Recylce(frame)
-		if (length >= 22500){
+		if (length >= 22500000){
 			break;
 		}
+
 		fmt.Println("copied: [", length,"/",60*1024*1024 ,"]", ".... frame size:",frame.Size()  )
 	}
 	fmt.Println("left consumer loop.")
-	WriteFile(h264Buffer[:22500],"tempfile2.txt");
+	WriteFile(h264Buffer[:22500000],"tempfile1.264");
 	///todo - this is testMP4 rest of function. for now just print what we got.
 	Done <- true
 
