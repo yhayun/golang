@@ -1,3 +1,5 @@
+// todo https://stackoverflow.com/questions/11184336/how-to-convert-from-byte-to-int-in-go-programming
+
 /**
  * Parser for exponential Golomb codes, a variable-bitwidth number encoding scheme used by h264.
 */
