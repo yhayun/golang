@@ -8,10 +8,16 @@ type Unit struct {
 }
 
 
-type Samples struct {
+type Sample struct {
 	units []Unit
 	pts int
 	dts int
+}
+
+type Config struct {
+	width int
+	height int
+	pixelRatio [2]uint
 }
 
 
@@ -21,7 +27,7 @@ type VideoTrack struct {
 	pid uint
 	inputTimeScale uint
 	sequenceNumber uint
-	samples []Samples
+	samples []Sample
 	len uint
 	dropped uint
 	isAAC bool
