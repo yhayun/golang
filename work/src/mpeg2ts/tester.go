@@ -42,7 +42,6 @@ func consumer(videoFrames frameQueue) {
 	h264Buffer := make([]byte, 60*1024*1024)
 	var length int = 0
 	var iframeDetected bool = false
-	//var numIframes int = 0
 	for {
 		//fmt.Println("entered consmer loop")
 		if videoFrames.IsEmpty() {
@@ -74,14 +73,16 @@ func consumer(videoFrames frameQueue) {
 			break;
 		}
 
-		fmt.Println("copied: [", length,"/",60*1024*1024 ,"]", ".... frame size:",frame.Size()  )
+		fmt.Println("copied: [", length,"/",60*1024*1024 ,"]", ".... frame size:")
 	}
 	fmt.Println("left consumer loop.")
 	WriteFile(h264Buffer[:22500000],"tempfile1.264");
-	///todo - this is testMP4 rest of function. for now just print what we got.
 	Done <- true
 
 }
+
+
+
 
 
 
