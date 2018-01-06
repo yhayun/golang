@@ -10,56 +10,59 @@ import "math"
 
 const UINT32_MAX = math.MaxUint32;
 
-class MP4 {
-  static init() {
-    MP4.types = {
-      avc1: [], // codingname
-      avcC: [],
-      btrt: [],
-      dinf: [],
-      dref: [],
-      esds: [],
-      ftyp: [],
-      hdlr: [],
-      mdat: [],
-      mdhd: [],
-      mdia: [],
-      mfhd: [],
-      minf: [],
-      moof: [],
-      moov: [],
-      mp4a: [],
-      '.mp3': [],
-      mvex: [],
-      mvhd: [],
-      pasp: [],
-      sdtp: [],
-      stbl: [],
-      stco: [],
-      stsc: [],
-      stsd: [],
-      stsz: [],
-      stts: [],
-      tfdt: [],
-      tfhd: [],
-      traf: [],
-      trak: [],
-      trun: [],
-      trex: [],
-      tkhd: [],
-      vmhd: [],
-      smhd: []
-    };
+type types struct {
+var avc1: []byte // codingname
+avcC: [],
+btrt: [],
+dinf: [],
+dref: [],
+esds: [],
+ftyp: [],
+hdlr: [],
+mdat: [],
+mdhd: [],
+mdia: [],
+mfhd: [],
+minf: [],
+moof: [],
+moov: [],
+mp4a: [],
+'.mp3': [],
+mvex: [],
+mvhd: [],
+pasp: [],
+sdtp: [],
+stbl: [],
+stco: [],
+stsc: [],
+stsd: [],
+stsz: [],
+stts: [],
+tfdt: [],
+tfhd: [],
+traf: [],
+trak: [],
+trun: [],
+trex: [],
+tkhd: [],
+vmhd: [],
+smhd: []
+};
 
+
+type MP4 struct{
+  static init() {
+    MP4.
     var i;
     for (i in MP4.types) {
       if (MP4.types.hasOwnProperty(i)) {
-        MP4.types[i] = [
-          i.charCodeAt(0),
-          i.charCodeAt(1),
-          i.charCodeAt(2),
-          i.charCodeAt(3)
-        ];
+        MP4.types[i] = []rune(types[i])
+        //  [
+        //  i.charCodeAt(0),
+        //  i.charCodeAt(1),
+        //  i.charCodeAt(2),
+        //  i.charCodeAt(3)
+        //];
       }
     }
 
@@ -76,18 +79,18 @@ class MP4 {
       0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
     ]);
 
-    var audioHdlr = new Uint8Array([
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00, // pre_defined
-      0x73, 0x6f, 0x75, 0x6e, // handler_type: 'soun'
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x53, 0x6f, 0x75, 0x6e,
-      0x64, 0x48, 0x61, 0x6e,
-      0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'SoundHandler'
-    ]);
+    //var audioHdlr = new Uint8Array([
+    //  0x00, // version 0
+    //  0x00, 0x00, 0x00, // flags
+    //  0x00, 0x00, 0x00, 0x00, // pre_defined
+    //  0x73, 0x6f, 0x75, 0x6e, // handler_type: 'soun'
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x53, 0x6f, 0x75, 0x6e,
+    //  0x64, 0x48, 0x61, 0x6e,
+    //  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'SoundHandler'
+    //]);
 
     MP4.HDLR_TYPES = {
       'video': videoHdlr,
