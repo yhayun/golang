@@ -113,16 +113,7 @@ type Track struct {
     return MP4.box(MP4.types.mdia, MP4.mdhd(track.timescale, track.duration), MP4.hdlr(track.type), MP4.minf(track));
   }
 
-  static mfhd(sequenceNumber) {
-    return MP4.box(MP4.types.mfhd, new Uint8Array([
-      0x00,
-      0x00, 0x00, 0x00, // flags
-      (sequenceNumber >> 24),
-      (sequenceNumber >> 16) & 0xFF,
-      (sequenceNumber >>  8) & 0xFF,
-      sequenceNumber & 0xFF, // sequence_number
-    ]));
-  }
+
 
   static minf(track) {
     if (track.type === 'audio') {
@@ -700,61 +691,72 @@ func (mp4* MP4) mvex(tracks []Track) []byte {
   }
 
 
-func (mp4 *MP4) Moof(sn int, baseMediaDecodeTime uint32, track Track) {
-return MP4.Box(mp4.types.moof, mp4.mfhd(sn), mp4.traf(track,baseMediaDecodeTime));
+func (mp4 *MP4) Moof(sn int, baseMediaDecodeTime uint32, track Track) []byte{
+return mp4.Box(mp4.types.moof, mp4.mfhd(sn), mp4.traf(track,baseMediaDecodeTime));
 }
 
-func (mp4 *MP4) trun(track Track, offset int) []byte{
+func (mp4 *MP4) mfhd(sequenceNumber int) {
+return mp4.Box(mp4.types.mfhd, uint8[]{
+0x00,
+0x00, 0x00, 0x00, // flags
+(sequenceNumber >> 24),
+(sequenceNumber >> 16) & 0xFF,
+(sequenceNumber >>  8) & 0xFF,
+sequenceNumber & 0xFF} // sequence_number ));
+}
+
+func (mp4 *MP4) Trun(track Track, offset uint32) []byte{
     var samples= track.samples || []
-    var len = samples.length
-    var arraylen = 12 + (16 * len)
+    var lenn int = samples.length
+    var arraylen = 12 + (16 * lenn)
     var array = make([]uint8,arraylen)
     var i int
     var sample
     var duration
     var size
     var flags
-    var cts;
+    var cts
     offset += 8 + arraylen;
-    array.set([
-      0x00, // version 0
+  var tempArr = []byte{0x00, // version 0
       0x00, 0x0f, 0x01, // flags
-      (len >>> 24) & 0xFF,
-      (len >>> 16) & 0xFF,
-      (len >>> 8) & 0xFF,
-      len & 0xFF, // sample_count
-      (offset >>> 24) & 0xFF,
-      (offset >>> 16) & 0xFF,
-      (offset >>> 8) & 0xFF,
-      offset & 0xFF // data_offset
-    ],0);
-    for i = 0; i < len; i++ {
+    (uint8)(lenn >> 24) & 0xFF,
+    (uint8)(lenn >> 16) & 0xFF,
+    (uint8)(lenn >> 8) & 0xFF,
+    (uint8)(lenn & 0xFF), // sample_count
+    (uint8)(offset >> 24) & 0xFF,
+    (uint8)(offset >> 16) & 0xFF,
+    (uint8)(offset >> 8) & 0xFF,
+    (uint8)(offset & 0xFF)} // data_offset ]
+  ArrayCopy(array,0,tempArr,0,12);
+    for i = 0; i < lenn; i++ {
       sample = samples[i];
       duration = sample.duration;
       size = sample.size;
       flags = sample.flags;
       cts = sample.cts;
-      array.set([
-        (duration >>> 24) & 0xFF,
-        (duration >>> 16) & 0xFF,
-        (duration >>> 8) & 0xFF,
+      var tempArr = []byte{
+        (duration>> > 24) & 0xFF,
+        (duration>> > 16) & 0xFF,
+        (duration>> > 8) & 0xFF,
         duration & 0xFF, // sample_duration
-        (size >>> 24) & 0xFF,
-        (size >>> 16) & 0xFF,
-        (size >>> 8) & 0xFF,
+        (size >> 24) & 0xFF,
+        (size >> 16) & 0xFF,
+        (size >> 8) & 0xFF,
         size & 0xFF, // sample_size
         (flags.isLeading << 2) | flags.dependsOn,
         (flags.isDependedOn << 6) |
-          (flags.hasRedundancy << 4) |
-          (flags.paddingValue << 1) |
-          flags.isNonSync,
+            (flags.hasRedundancy << 4) |
+            (flags.paddingValue << 1) |
+            flags.isNonSync,
         flags.degradPrio & 0xF0 << 8,
         flags.degradPrio & 0x0F, // sample_flags
-        (cts >>> 24) & 0xFF,
-        (cts >>> 16) & 0xFF,
-        (cts >>> 8) & 0xFF,
-        cts & 0xFF // sample_composition_time_offset
-      ],12+16*i);
+        (cts >> 24) & 0xFF,
+        (cts >> 16) & 0xFF,
+        byte(cts >> 8) & 0xFF,
+        cts & 0xFF };// sample_composition_time_offset
+
+      ArrayCopy(tempArr,0,tempArr,12+16*i,len(tempArr))
+
     }
     return mp4.Box(mp4.types.trun, array);
   }
