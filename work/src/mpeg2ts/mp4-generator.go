@@ -82,9 +82,7 @@ type Track struct {
     return MP4.box(MP4.types.hdlr, MP4.HDLR_TYPES[type]);
   }
 
-  static mdat(data) {
-    return MP4.box(MP4.types.mdat, data);
-  }
+
 
   static mdhd(timescale, duration) {
     duration *= timescale;
@@ -124,10 +122,6 @@ type Track struct {
     } else {
       return MP4.box(MP4.types.minf, MP4.box(MP4.types.vmhd, MP4.VMHD), MP4.DINF, MP4.stbl(track));
     }
-  }
-
-  static moof(sn, baseMediaDecodeTime, track) {
-    return MP4.box(MP4.types.moof, MP4.mfhd(sn), MP4.traf(track,baseMediaDecodeTime));
   }
 
   static mvex(tracks) {
@@ -188,23 +182,7 @@ type Track struct {
     return MP4.box(MP4.types.mvhd, bytes);
   }
 
-  static sdtp(track) {
-    var
-      samples = track.samples || [],
-      bytes = new Uint8Array(4 + samples.length),
-      flags,
-      i;
-    // leave the full box header (4 bytes) all zero
-    // write the sample table
-    for (i = 0; i < samples.length; i++) {
-      flags = samples[i].flags;
-      bytes[i + 4] = (flags.dependsOn << 4) |
-        (flags.isDependedOn << 2) |
-        (flags.hasRedundancy);
-    }
 
-    return MP4.box(MP4.types.sdtp, bytes);
-  }
 
   static stbl(track) {
     return MP4.box(MP4.types.stbl, MP4.stsd(track), MP4.box(MP4.types.stts, MP4.STTS), MP4.box(MP4.types.stsc, MP4.STSC), MP4.box(MP4.types.stsz, MP4.STSZ), MP4.box(MP4.types.stco, MP4.STCO));
@@ -407,42 +385,6 @@ type Track struct {
     ]));
   }
 
-  static traf(track,baseMediaDecodeTime) {
-    var sampleDependencyTable = MP4.sdtp(track),
-        id = track.id,
-        upperWordBaseMediaDecodeTime = Math.floor(baseMediaDecodeTime / (UINT32_MAX + 1)),
-        lowerWordBaseMediaDecodeTime = Math.floor(baseMediaDecodeTime % (UINT32_MAX + 1));
-    return MP4.box(MP4.types.traf,
-               MP4.box(MP4.types.tfhd, new Uint8Array([
-                 0x00, // version 0
-                 0x00, 0x00, 0x00, // flags
-                 (id >> 24),
-                 (id >> 16) & 0XFF,
-                 (id >> 8) & 0XFF,
-                 (id & 0xFF) // track_ID
-               ])),
-               MP4.box(MP4.types.tfdt, new Uint8Array([
-                 0x01, // version 1
-                 0x00, 0x00, 0x00, // flags
-                 (upperWordBaseMediaDecodeTime >>24),
-                 (upperWordBaseMediaDecodeTime >> 16) & 0XFF,
-                 (upperWordBaseMediaDecodeTime >> 8) & 0XFF,
-                 (upperWordBaseMediaDecodeTime & 0xFF),
-                 (lowerWordBaseMediaDecodeTime >>24),
-                 (lowerWordBaseMediaDecodeTime >> 16) & 0XFF,
-                 (lowerWordBaseMediaDecodeTime >> 8) & 0XFF,
-                 (lowerWordBaseMediaDecodeTime & 0xFF)
-               ])),
-               MP4.trun(track,
-                    sampleDependencyTable.length +
-                    16 + // tfhd
-                    20 + // tfdt
-                    8 +  // traf header
-                    16 + // mfhd
-                    8 +  // moof header
-                    8),  // mdat header
-               sampleDependencyTable);
-  }
 
   /**
    * Generate a track box.
@@ -616,6 +558,56 @@ mp4.VMHD = [
 mp4.FTYP = MP4.box(MP4.types.ftyp, mp4.majorBrand, mp4.minorVersion, mp4.majorBrand, mp4.avc1Brand);
 mp4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, mp4.dref));
   }
+
+func (mp4* MP4) Sdtp(track Track) []byte{
+var samples = track.samples
+var bytes = make([]byte,4 + len(samples))
+var flags
+var i
+// leave the full box header (4 bytes) all zero
+// write the sample table
+for i = 0; i < len(samples); i++ {
+flags = samples[i].flags;
+bytes[i + 4] = (flags.dependsOn << 4) |
+(flags.isDependedOn << 2) |
+(flags.hasRedundancy);
+}
+return mp4.Box(mp4.types.sdtp, bytes);
+}
+
+func (mp4* MP4) Traf(track Track, baseMediaDecodeTime int) []byte{
+    var sampleDependencyTable = mp4.Sdtp(track)
+    var id = track.id
+    var upperWordBaseMediaDecodeTime = int(math.Floor(float64(baseMediaDecodeTime / (UINT32_MAX + 1)))),
+    var lowerWordBaseMediaDecodeTime = int(math.Floor(float64(baseMediaDecodeTime % (UINT32_MAX + 1))));
+    return mp4.Box(mp4.types.traf,mp4.Box(mp4.types.tfhd, []byte{
+  0x00,             // version 0
+  0x00, 0x00, 0x00, // flags
+  byte(id >> 24),
+  byte(id >> 16) & 0XFF,
+  byte(id >> 8) & 0XFF,
+  byte(id & 0xFF)}) // track_ID
+  ,mp4.Box(mp4.types.tfdt, []byte{
+  0x01,             // version 1
+  0x00, 0x00, 0x00, // flags
+  byte(upperWordBaseMediaDecodeTime >>24),
+  byte(upperWordBaseMediaDecodeTime >> 16) & 0XFF,
+  byte(upperWordBaseMediaDecodeTime >> 8) & 0XFF,
+  byte(upperWordBaseMediaDecodeTime & 0xFF),
+  byte(lowerWordBaseMediaDecodeTime >>24),
+  byte(lowerWordBaseMediaDecodeTime >> 16) & 0XFF,
+  byte(lowerWordBaseMediaDecodeTime >> 8) & 0XFF,
+  byte((lowerWordBaseMediaDecodeTime) & 0xFF)
+  }),mp4.Trun(track,
+                    len(sampleDependencyTable) +
+                    16 + // tfhd
+                    20 + // tfdt
+                    8 +  // traf header
+                    16 + // mfhd
+                    8 +  // moof header
+                    8),  // mdat header
+               sampleDependencyTable);
+}
 
 func (mp4* MP4) Box(_type []byte, payload ...[]byte) []byte {
 	size := 8
@@ -853,19 +845,23 @@ func (mp4 *MP4) Moof(sn int, baseMediaDecodeTime uint32, track Track) []byte{
 return mp4.Box(mp4.types.moof, mp4.mfhd(sn), mp4.traf(track,baseMediaDecodeTime));
 }
 
-func (mp4 *MP4) mfhd(sequenceNumber int) {
-return mp4.Box(mp4.types.mfhd, uint8[]{
-0x00,
-0x00, 0x00, 0x00, // flags
-(sequenceNumber >> 24),
-(sequenceNumber >> 16) & 0xFF,
-(sequenceNumber >>  8) & 0xFF,
-sequenceNumber & 0xFF} // sequence_number ));
+func (mp4 *MP4) Mdat(data []byte) []byte {
+  return mp4.Box(mp4.types.mdat, data);
 }
 
-func (mp4 *MP4) Trun(track Track, offset uint32) []byte{
-    var samples= track.samples || []
-    var lenn int = samples.length
+func (mp4 *MP4) Mfhd(sequenceNumber int) []byte{
+return mp4.Box(mp4.types.mfhd, []byte{
+0x00,
+0x00, 0x00, 0x00, // flags
+byte(sequenceNumber >> 24),
+byte(sequenceNumber >> 16) & 0xFF,
+byte(sequenceNumber >>  8) & 0xFF,
+byte(sequenceNumber) & 0xFF});// sequence_number ));
+}
+
+func (mp4 *MP4) Trun(track Track, offset int) []byte{
+    var samples= track.samples
+    var lenn int = len(samples)
     var arraylen = 12 + (16 * lenn)
     var array = make([]uint8,arraylen)
     var i int
@@ -893,9 +889,9 @@ func (mp4 *MP4) Trun(track Track, offset uint32) []byte{
       flags = sample.flags;
       cts = sample.cts;
       var tempArr = []byte{
-        (duration>> > 24) & 0xFF,
-        (duration>> > 16) & 0xFF,
-        (duration>> > 8) & 0xFF,
+        (duration >> 24) & 0xFF,
+        (duration >> 16) & 0xFF,
+        (duration >> 8) & 0xFF,
         duration & 0xFF, // sample_duration
         (size >> 24) & 0xFF,
         (size >> 16) & 0xFF,
