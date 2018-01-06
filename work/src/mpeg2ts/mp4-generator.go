@@ -615,7 +615,7 @@ func (mp4* MP4) Box(_type []byte, payload ...[]byte) []byte {
 	length := len(payload)
 
     // calculate the total size we need to allocate
-    for (i >= 0) {
+      for (i >= 0) {
       size += len(payload[i])
       i--
     }
