@@ -79,9 +79,7 @@ type Track struct {
 }
 
 
-
-}
-func (mp4* MP4) InitSegment(tracks Tracks) []byte{
+func (mp4* MP4) InitSegment(tracks []Track) []byte{
   if (!mp4.types) {
     mp4.init();
   }
@@ -92,9 +90,8 @@ func (mp4* MP4) InitSegment(tracks Tracks) []byte{
   ArrayCopy(movie,0,result, len(mp4.FTYP) ,len(movie))
   return result;
 }
-export default MP4;
 
-init(mp4 *MP4) {
+func (mp4* MP4) init() {
 //var i;
 //for (i in MP4.types) {
 //if (MP4.types.hasOwnProperty(i)) {
