@@ -284,7 +284,7 @@ func FrameQueueDispatcher(videoFrames frameQueue) {
 		if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
 			i_counter++
 			p_counter = 0
-			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>__size:%d", counter,i_counter,p_counter,i_type,frame.Size())
+			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>__size_%d", counter,i_counter,p_counter,i_type,frame.Size())
 		} else {
 			p_counter++;
 			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>", counter,i_counter,p_counter,p_type)
