@@ -1,4 +1,7 @@
-package main
+package m
+
+import "math"
+ain
 
 import "math"
 
@@ -10,144 +13,51 @@ import "math"
 
 const UINT32_MAX = math.MaxUint32;
 
-type types struct {
-var avc1: []byte // codingname
-avcC: [],
-btrt: [],
-dinf: [],
-dref: [],
-esds: [],
-ftyp: [],
-hdlr: [],
-mdat: [],
-mdhd: [],
-mdia: [],
-mfhd: [],
-minf: [],
-moof: [],
-moov: [],
-mp4a: [],
-'.mp3': [],
-mvex: [],
-mvhd: [],
-pasp: [],
-sdtp: [],
-stbl: [],
-stco: [],
-stsc: [],
-stsd: [],
-stsz: [],
-stts: [],
-tfdt: [],
-tfhd: [],
-traf: [],
-trak: [],
-trun: [],
-trex: [],
-tkhd: [],
-vmhd: [],
-smhd: []
-};
+type _Types struct {
+  var avc1 []byte
+  var avcC []byte
+  var btrt []byte
+  var dinf []byte
+  var dref []byte
+  var esds []byte
+  var ftyp []byte
+  var hdlr []byte
+  var mdat []byte
+  var mdhd []byte
+  var mdia []byte
+  var mfhd []byte
+  var minf []byte
+  var moof []byte
+  var moov []byte
+  var mp4a []byte
+  var '.mp3' []byte
+  var mvex []byte
+  var mvhd []byte
+  var pasp []byte
+  var sdtp []byte
+  var stbl []byte
+  var stco []byte
+  var stsc []byte
+  var stsd []byte
+  var stsz []byte
+  var stts []byte
+  var tfdt []byte
+  var tfhd []byte
+  var traf []byte
+  var trak []byte
+  var trun []byte
+  var trex []byte
+  var tkhd []byte
+  var vmhd []byte
+  var smhd []byte
+}
 
 
 type MP4 struct{
-  static init() {
-    MP4.
-    var i;
-    for (i in MP4.types) {
-      if (MP4.types.hasOwnProperty(i)) {
-        MP4.types[i] = []rune(types[i])
-        //  [
-        //  i.charCodeAt(0),
-        //  i.charCodeAt(1),
-        //  i.charCodeAt(2),
-        //  i.charCodeAt(3)
-        //];
-      }
-    }
+  var types _Types
+  var videoHdlr uint8[]
+  
 
-    var videoHdlr = new Uint8Array([
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00, // pre_defined
-      0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x56, 0x69, 0x64, 0x65,
-      0x6f, 0x48, 0x61, 0x6e,
-      0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
-    ]);
-
-    //var audioHdlr = new Uint8Array([
-    //  0x00, // version 0
-    //  0x00, 0x00, 0x00, // flags
-    //  0x00, 0x00, 0x00, 0x00, // pre_defined
-    //  0x73, 0x6f, 0x75, 0x6e, // handler_type: 'soun'
-    //  0x00, 0x00, 0x00, 0x00, // reserved
-    //  0x00, 0x00, 0x00, 0x00, // reserved
-    //  0x00, 0x00, 0x00, 0x00, // reserved
-    //  0x53, 0x6f, 0x75, 0x6e,
-    //  0x64, 0x48, 0x61, 0x6e,
-    //  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'SoundHandler'
-    //]);
-
-    MP4.HDLR_TYPES = {
-      'video': videoHdlr,
-      'audio': audioHdlr
-    };
-
-    var dref = new Uint8Array([
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x01, // entry_count
-      0x00, 0x00, 0x00, 0x0c, // entry_size
-      0x75, 0x72, 0x6c, 0x20, // 'url' type
-      0x00, // version 0
-      0x00, 0x00, 0x01 // entry_flags
-    ]);
-
-    var stco = new Uint8Array([
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00 // entry_count
-    ]);
-
-    MP4.STTS = MP4.STSC = MP4.STCO = stco;
-
-    MP4.STSZ = new Uint8Array([
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00, // sample_size
-      0x00, 0x00, 0x00, 0x00, // sample_count
-    ]);
-    MP4.VMHD = new Uint8Array([
-      0x00, // version
-      0x00, 0x00, 0x01, // flags
-      0x00, 0x00, // graphicsmode
-      0x00, 0x00,
-      0x00, 0x00,
-      0x00, 0x00 // opcolor
-    ]);
-    MP4.SMHD = new Uint8Array([
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, // balance
-      0x00, 0x00 // reserved
-    ]);
-
-    MP4.STSD = new Uint8Array([
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x01]);// entry_count
-
-    var majorBrand = new Uint8Array([105,115,111,109]); // isom
-    var avc1Brand = new Uint8Array([97,118,99,49]); // avc1
-    var minorVersion = new Uint8Array([0, 0, 0, 1]);
-
-    MP4.FTYP = MP4.box(MP4.types.ftyp, majorBrand, minorVersion, majorBrand, avc1Brand);
-    MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, dref));
-  }
 
   static box(type) {
   var
@@ -654,3 +564,100 @@ type MP4 struct{
 
 export default MP4;
 
+init(mp4 *MP4) {
+
+    var i;
+    for (i in MP4.types) {
+      if (MP4.types.hasOwnProperty(i)) {
+        MP4.types[i] = []rune(types[i])
+        //  [
+        //  i.charCodeAt(0),
+        //  i.charCodeAt(1),
+        //  i.charCodeAt(2),
+        //  i.charCodeAt(3)
+        //];
+      }
+    }
+
+    var videoHdlr = new Uint8Array([
+      0x00, // version 0
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, 0x00, 0x00, // pre_defined
+      0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
+      0x00, 0x00, 0x00, 0x00, // reserved
+      0x00, 0x00, 0x00, 0x00, // reserved
+      0x00, 0x00, 0x00, 0x00, // reserved
+      0x56, 0x69, 0x64, 0x65,
+      0x6f, 0x48, 0x61, 0x6e,
+      0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
+    ]);
+
+    //var audioHdlr = new Uint8Array([
+    //  0x00, // version 0
+    //  0x00, 0x00, 0x00, // flags
+    //  0x00, 0x00, 0x00, 0x00, // pre_defined
+    //  0x73, 0x6f, 0x75, 0x6e, // handler_type: 'soun'
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x00, 0x00, 0x00, 0x00, // reserved
+    //  0x53, 0x6f, 0x75, 0x6e,
+    //  0x64, 0x48, 0x61, 0x6e,
+    //  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'SoundHandler'
+    //]);
+
+    MP4.HDLR_TYPES = {
+      'video': videoHdlr,
+      'audio': audioHdlr
+    };
+
+    var dref = new Uint8Array([
+      0x00, // version 0
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, 0x00, 0x01, // entry_count
+      0x00, 0x00, 0x00, 0x0c, // entry_size
+      0x75, 0x72, 0x6c, 0x20, // 'url' type
+      0x00, // version 0
+      0x00, 0x00, 0x01 // entry_flags
+    ]);
+
+    var stco = new Uint8Array([
+      0x00, // version
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, 0x00, 0x00 // entry_count
+    ]);
+
+    MP4.STTS = MP4.STSC = MP4.STCO = stco;
+
+    MP4.STSZ = new Uint8Array([
+      0x00, // version
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, 0x00, 0x00, // sample_size
+      0x00, 0x00, 0x00, 0x00, // sample_count
+    ]);
+    MP4.VMHD = new Uint8Array([
+      0x00, // version
+      0x00, 0x00, 0x01, // flags
+      0x00, 0x00, // graphicsmode
+      0x00, 0x00,
+      0x00, 0x00,
+      0x00, 0x00 // opcolor
+    ]);
+    MP4.SMHD = new Uint8Array([
+      0x00, // version
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, // balance
+      0x00, 0x00 // reserved
+    ]);
+
+    MP4.STSD = new Uint8Array([
+      0x00, // version 0
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00, 0x00, 0x01]);// entry_count
+
+    var majorBrand = new Uint8Array([105,115,111,109]); // isom
+    var avc1Brand = new Uint8Array([97,118,99,49]); // avc1
+    var minorVersion = new Uint8Array([0, 0, 0, 1]);
+
+    MP4.FTYP = MP4.box(MP4.types.ftyp, majorBrand, minorVersion, majorBrand, avc1Brand);
+    MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, dref));
+  }
