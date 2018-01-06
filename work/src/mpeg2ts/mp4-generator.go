@@ -56,7 +56,7 @@ type _Types struct {
 type MP4 struct{
   var types _Types
   var videoHdlr uint8[]
-  
+
 
 
   static box(type) {
