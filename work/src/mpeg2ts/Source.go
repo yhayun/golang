@@ -7,6 +7,7 @@ import (
 	//"log"
 )
 const UDP_SIZE = 1500
+const FRAME_SIZE = 1500* 50;
 const MPEG2TS_PACKET_LENGTH = 188
 const MAX_UDP_PACKET_SIZE = 1500;
 
@@ -181,7 +182,7 @@ func main() {
 
 	//addr, _ := net.ResolveUDPAddr("udp", ":8888")
 	//sock, _ := net.ListenUDP("udp", addr)
-	var videoFrames frameQueue = *NewFrameQueue(100,UDP_SIZE*50)
+	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
 	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
 	var uSource UdpSource = *NewUdpSource(100, videoFrames)
 	fmt.Println("working on UDP");

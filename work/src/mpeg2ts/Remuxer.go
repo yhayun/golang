@@ -15,6 +15,17 @@ type VideoData struct {
 	nb       int // maybe nb is number of bytes??
 	dropped  int
 }
+type TrackVideo_metaData struct {
+	width int
+	height int
+}
+
+type TracksVideo struct {
+	container string//: 'video/mp4',
+	codec string // :  videoTrack.codec, (might be 'avc1.42e01e').
+	initSegment : MP4.initSegment([videoTrack]),
+	metadata TrackVideo_metaData
+}
 
 const MaxInt = int(^uint(0) >> 1)
 
@@ -34,6 +45,13 @@ type Mp4Sample struct {
 	flags Flags
 
 }
+
+// our project note - we need to suport mp4 only.
+type TypeSupported struct {
+	mp4  bool //: MediaSource.isTypeSupported('video/mp4'),
+	mpeg bool //: MediaSource.isTypeSupported('audio/mpeg'),
+	mp3  bool //: MediaSource.isTypeSupported('audio/mp4; codecs="mp3"')
+};
 
 func Round(num float64) int64 {
 	return int64(num + 0.5)
@@ -72,11 +90,13 @@ type MP4Remuxer struct {
 	_PTSNormalize int
 	nextAvcDts    *float64
 	ISGenerated   bool //= false;
+	typeSupported TypeSupported
 }
 
 func NewMP4Remuxer() *MP4Remuxer {
 	return &MP4Remuxer{
 		ISGenerated: false,
+		typeSupported: TypeSupported{true , false , false },
 	}
 }
 
@@ -152,14 +172,6 @@ func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
 	var videoSamples = videoTrack.samples
 	var typeSupported = _this.typeSupported
 	var container = "audio/mp4"
-	var tracks =
-	{
-	}
-	var data =
-	{
-	tracks:
-		tracks
-	}
 	var computePTSDTS = (_this._initPTS == undefined)
 	var initPTS float64
 	var initDTS float64
@@ -203,7 +215,7 @@ func (_this *MP4Remuxer) GenerateIS(videoTrack VideoTrack, timeOffset uint) {
 		// we use input time scale straight away to avoid rounding issues on frame duration / cts computation
 		var inputTimeScale = videoTrack.inputTimeScale
 		videoTrack.timescale = int(inputTimeScale)
-		tracks.video =Video{
+		tracks.video = Video{
 		container:
 			"video/mp4",
 				codec :  videoTrack.codec,
