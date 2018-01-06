@@ -1,4 +1,4 @@
-package m
+package main
 
 import "math"
 ain
@@ -57,32 +57,6 @@ type MP4 struct {
   var videoHdlr []uint8
 }
 
-
-  static box(type) {
-  var
-    payload = Array.prototype.slice.call(arguments, 1),
-    size = 8,
-    i = payload.length,
-    len = i,
-    result;
-    // calculate the total size we need to allocate
-    while (i--) {
-      size += payload[i].byteLength;
-    }
-    result = new Uint8Array(size);
-    result[0] = (size >> 24) & 0xff;
-    result[1] = (size >> 16) & 0xff;
-    result[2] = (size >> 8) & 0xff;
-    result[3] = size  & 0xff;
-    result.set(type, 4);
-    // copy the payload into the result
-    for (i = 0, size = 8; i < len; i++) {
-      // copy payload[i] array @ offset size
-      result.set(payload[i], size);
-      size += payload[i].byteLength;
-    }
-    return result;
-  }
 
   static hdlr(type) {
     return MP4.box(MP4.types.hdlr, MP4.HDLR_TYPES[type]);
@@ -694,4 +668,32 @@ smhd =  [115, 109, 104, 100]
 
     MP4.FTYP = MP4.box(MP4.types.ftyp, majorBrand, minorVersion, majorBrand, avc1Brand);
     MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, dref));
+  }
+
+func (mp4* MP4) Box(_type []byte, payload ...[]byte) []byte {
+	size := 8
+	i := len(payload)
+	length := len(payload)
+
+    // calculate the total size we need to allocate
+    for (i >= 0) {
+      size += len(payload[i])
+      i--
+    }
+
+    var result = make([]byte,size)
+    result[0] = (byte)(size >> 24) & 0xff;
+    result[1] = (byte)(size >> 16) & 0xff;
+    result[2] = (byte)(size >> 8) & 0xff;
+    result[3] = (byte)(size)  & 0xff;
+	ArrayCopy(_type, 0,  result, 4, len(_type)) //result.set(type, 4);
+    // copy the payload into the result
+    size = 8
+    for i= 0; i < length; i++ {
+      // copy payload[i] array @ offset size
+      ArrayCopy(payload[i], 0, result, size, len(payload[i]))// result.set(payload[i], size);
+      size += len(payload[i])
+    }
+
+    return result;
   }
