@@ -2,15 +2,6 @@ package main
 
 import "math"
 
-<<<<<<< HEAD
-
-import "math"
-ain
-=======
->>>>>>> 1ecabd2fb943b2beab42ab7cf9dfe9ca945f33f8
-
-import "math"
-
 /**
  * Generate MP4 Box
 */
