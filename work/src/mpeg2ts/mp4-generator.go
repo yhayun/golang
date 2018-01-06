@@ -30,7 +30,6 @@ type _Types struct {
   var moof []byte
   var moov []byte
   var mp4a []byte
-  var '.mp3' []byte
   var mvex []byte
   var mvhd []byte
   var pasp []byte
@@ -53,10 +52,10 @@ type _Types struct {
 }
 
 
-type MP4 struct{
+type MP4 struct {
   var types _Types
-  var videoHdlr uint8[]
-
+  var videoHdlr []uint8
+}
 
 
   static box(type) {
@@ -565,20 +564,55 @@ type MP4 struct{
 export default MP4;
 
 init(mp4 *MP4) {
+//var i;
+//for (i in MP4.types) {
+//if (MP4.types.hasOwnProperty(i)) {
+//MP4.types[i] = []rune(types[i])
+//  [
+//  i.charCodeAt(0),
+//  i.charCodeAt(1),
+//  i.charCodeAt(2),
+//  i.charCodeAt(3)
+//];
+//}
+//}
+avc1 = [97, 118, 99, 49]
+avcC = [97, 118, 99, 67]
+btrt = [98, 116, 114, 116]
+dinf = [100, 105, 110, 102]
+dref =  [100, 114, 101, 102]
+esds = [101, 115, 100, 115]
+ftyp = [102, 116, 121, 112]
+hdlr = [104, 100, 108, 114]
+mdat = [109, 100, 97, 116]
+mdhd =  [109, 100, 104, 100]
+mdia = [109, 100, 105, 97]
+mfhd = [109, 102, 104, 100]
+minf = [109, 105, 110, 102]
+moof = [109, 111, 111, 102]
+moov =  [109, 111, 111, 118]
+mp4a = [109, 112, 52, 97]
+mvex = [109, 118, 101, 120]
+mvhd = [109, 118, 104, 100]
+pasp = [112, 97, 115, 112]
+sdtp =  [115, 100, 116, 112]
+stbl = [115, 116, 98, 108]
+stco = [115, 116, 99, 111]
+stsc = [115, 116, 115, 99]
+stsd = [115, 116, 115, 100]
+stsz =  [115, 116, 115, 122]
+stts = [115, 116, 116, 115]
+tfdt = [116, 102, 100, 116]
+tfhd = [116, 102, 104, 100]
+traf = [116, 114, 97, 102]
+trak =  [116, 114, 97, 107]
+trun = [116, 114, 117, 110]
+trex = [116, 114, 101, 120]
+tkhd = [116, 107, 104, 100]
+vmhd = [118, 109, 104, 100]
+smhd =  [115, 109, 104, 100]
 
-    var i;
-    for (i in MP4.types) {
-      if (MP4.types.hasOwnProperty(i)) {
-        MP4.types[i] = []rune(types[i])
-        //  [
-        //  i.charCodeAt(0),
-        //  i.charCodeAt(1),
-        //  i.charCodeAt(2),
-        //  i.charCodeAt(3)
-        //];
-      }
-    }
-
+}
     var videoHdlr = new Uint8Array([
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
