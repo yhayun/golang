@@ -1,7 +1,4 @@
-package m
-
-import "math"
-ain
+package main
 
 import "math"
 
@@ -14,47 +11,61 @@ import "math"
 const UINT32_MAX = math.MaxUint32;
 
 type _Types struct {
-  var avc1 []byte
-  var avcC []byte
-  var btrt []byte
-  var dinf []byte
-  var dref []byte
-  var esds []byte
-  var ftyp []byte
-  var hdlr []byte
-  var mdat []byte
-  var mdhd []byte
-  var mdia []byte
-  var mfhd []byte
-  var minf []byte
-  var moof []byte
-  var moov []byte
-  var mp4a []byte
-  var mvex []byte
-  var mvhd []byte
-  var pasp []byte
-  var sdtp []byte
-  var stbl []byte
-  var stco []byte
-  var stsc []byte
-  var stsd []byte
-  var stsz []byte
-  var stts []byte
-  var tfdt []byte
-  var tfhd []byte
-  var traf []byte
-  var trak []byte
-  var trun []byte
-  var trex []byte
-  var tkhd []byte
-  var vmhd []byte
-  var smhd []byte
+  avc1 []byte
+  avcC []byte
+  btrt []byte
+  dinf []byte
+  dref []byte
+  esds []byte
+  ftyp []byte
+  hdlr []byte
+  mdat []byte
+  mdhd []byte
+  mdia []byte
+  mfhd []byte
+  minf []byte
+  moof []byte
+  moov []byte
+  mp4a []byte
+  mvex []byte
+  mvhd []byte
+  pasp []byte
+  sdtp []byte
+  stbl []byte
+  stco []byte
+  stsc []byte
+  stsd []byte
+  stsz []byte
+  stts []byte
+  tfdt []byte
+  tfhd []byte
+  traf []byte
+  trak []byte
+  trun []byte
+  trex []byte
+  tkhd []byte
+  vmhd []byte
+  smhd []byte
 }
 
 
 type MP4 struct {
-  var types _Types
-  var videoHdlr []uint8
+  types _Types
+  videoHdlr []uint8
+  dref []uint8
+  stco []uint8
+  STTS []uint8
+  STSC []uint8
+  STCO []uint8
+  STSZ []uint8
+  VMHD []uint8
+  SMHD []uint8
+  STSD []uint8
+  majorBrand []uint8
+  avc1Brand []uint8
+  minorVersion []uint8
+  FTYP []uint8
+  DINF []uint8
 }
 
 
@@ -576,55 +587,53 @@ init(mp4 *MP4) {
 //];
 //}
 //}
-avc1 = [97, 118, 99, 49]
-avcC = [97, 118, 99, 67]
-btrt = [98, 116, 114, 116]
-dinf = [100, 105, 110, 102]
-dref =  [100, 114, 101, 102]
-esds = [101, 115, 100, 115]
-ftyp = [102, 116, 121, 112]
-hdlr = [104, 100, 108, 114]
-mdat = [109, 100, 97, 116]
-mdhd =  [109, 100, 104, 100]
-mdia = [109, 100, 105, 97]
-mfhd = [109, 102, 104, 100]
-minf = [109, 105, 110, 102]
-moof = [109, 111, 111, 102]
-moov =  [109, 111, 111, 118]
-mp4a = [109, 112, 52, 97]
-mvex = [109, 118, 101, 120]
-mvhd = [109, 118, 104, 100]
-pasp = [112, 97, 115, 112]
-sdtp =  [115, 100, 116, 112]
-stbl = [115, 116, 98, 108]
-stco = [115, 116, 99, 111]
-stsc = [115, 116, 115, 99]
-stsd = [115, 116, 115, 100]
-stsz =  [115, 116, 115, 122]
-stts = [115, 116, 116, 115]
-tfdt = [116, 102, 100, 116]
-tfhd = [116, 102, 104, 100]
-traf = [116, 114, 97, 102]
-trak =  [116, 114, 97, 107]
-trun = [116, 114, 117, 110]
-trex = [116, 114, 101, 120]
-tkhd = [116, 107, 104, 100]
-vmhd = [118, 109, 104, 100]
-smhd =  [115, 109, 104, 100]
-
-}
-    var videoHdlr = new Uint8Array([
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00, // pre_defined
-      0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x00, 0x00, 0x00, 0x00, // reserved
-      0x56, 0x69, 0x64, 0x65,
-      0x6f, 0x48, 0x61, 0x6e,
-      0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
-    ]);
+  mp4.types.avc1=  [97, 118, 99, 49]
+  mp4.types.avcC=  [97, 118, 99, 67]
+  mp4.types.btrt=  [98, 116, 114, 116]
+  mp4.types.dinf=  [100, 105, 110, 102]
+  mp4.types.dref=  [100, 114, 101, 102]
+  mp4.types.esds=  [101, 115, 100, 115]
+  mp4.types.ftyp=  [102, 116, 121, 112]
+  mp4.types.hdlr=  [104, 100, 108, 114]
+  mp4.types.mdat=  [109, 100, 97, 116]
+  mp4.types.mdhd=  [109, 100, 104, 100]
+  mp4.types.mdia=  [109, 100, 105, 97]
+  mp4.types.mfhd=  [109, 102, 104, 100]
+  mp4.types.minf=  [109, 105, 110, 102]
+  mp4.types.moof=  [109, 111, 111, 102]
+  mp4.types.moov=  [109, 111, 111, 118]
+  mp4.types.mp4a=  [109, 112, 52, 97]
+  mp4.types.mvex=  [109, 118, 101, 120]
+  mp4.types.mvhd=  [109, 118, 104, 100]
+  mp4.types.pasp=  [112, 97, 115, 112]
+  mp4.types.sdtp=  [115, 100, 116, 112]
+  mp4.types.stbl=  [115, 116, 98, 108]
+  mp4.types.stco=  [115, 116, 99, 111]
+  mp4.types.stsc=  [115, 116, 115, 99]
+  mp4.types.stsd=  [115, 116, 115, 100]
+  mp4.types.stsz=  [115, 116, 115, 122]
+  mp4.types.stts=  [115, 116, 116, 115]
+  mp4.types.tfdt=  [116, 102, 100, 116]
+  mp4.types.tfhd=  [116, 102, 104, 100]
+  mp4.types.traf=  [116, 114, 97, 102]
+  mp4.types.trak=  [116, 114, 97, 107]
+  mp4.types.trun=  [116, 114, 117, 110]
+  mp4.types.trex=  [116, 114, 101, 120]
+  mp4.types.tkhd=  [116, 107, 104, 100]
+  mp4.types.vmhd=  [118, 109, 104, 100]
+  mp4.types.smhd=  [115, 109, 104, 100]
+  mp4.videoHdlr = [
+  0x00, // version 0
+  0x00, 0x00, 0x00, // flags
+  0x00, 0x00, 0x00, 0x00, // pre_defined
+  0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
+  0x00, 0x00, 0x00, 0x00, // reserved
+  0x00, 0x00, 0x00, 0x00, // reserved
+  0x00, 0x00, 0x00, 0x00, // reserved
+  0x56, 0x69, 0x64, 0x65,
+  0x6f, 0x48, 0x61, 0x6e,
+  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
+  ]
 
     //var audioHdlr = new Uint8Array([
     //  0x00, // version 0
@@ -639,12 +648,12 @@ smhd =  [115, 109, 104, 100]
     //  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'SoundHandler'
     //]);
 
-    MP4.HDLR_TYPES = {
-      'video': videoHdlr,
-      'audio': audioHdlr
-    };
+    //MP4.HDLR_TYPES = { // todo always  videoHdlr
+    //  'video': videoHdlr,
+    //  'audio': audioHdlr
+    //};
 
-    var dref = new Uint8Array([
+    mp4.dref = [
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x01, // entry_count
@@ -652,46 +661,47 @@ smhd =  [115, 109, 104, 100]
       0x75, 0x72, 0x6c, 0x20, // 'url' type
       0x00, // version 0
       0x00, 0x00, 0x01 // entry_flags
-    ]);
+    ]
 
-    var stco = new Uint8Array([
+     mp4.stco = [
       0x00, // version
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x00 // entry_count
-    ]);
+    ]
 
-    MP4.STTS = MP4.STSC = MP4.STCO = stco;
+    mp4.STTS = mp4.STSC = mp4.STCO = stco;
 
-    MP4.STSZ = new Uint8Array([
+    mp4.STSZ = [
       0x00, // version
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x00, // sample_size
       0x00, 0x00, 0x00, 0x00, // sample_count
-    ]);
-    MP4.VMHD = new Uint8Array([
+    ]
+
+mp4.VMHD = [
       0x00, // version
       0x00, 0x00, 0x01, // flags
       0x00, 0x00, // graphicsmode
       0x00, 0x00,
       0x00, 0x00,
       0x00, 0x00 // opcolor
-    ]);
-    MP4.SMHD = new Uint8Array([
+    ]
+    mp4.SMHD = [
       0x00, // version
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, // balance
       0x00, 0x00 // reserved
-    ]);
+    ]
 
-    MP4.STSD = new Uint8Array([
+    mp4.STSD = [
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x01]);// entry_count
+      0x00, 0x00, 0x00, 0x01]// entry_count
 
-    var majorBrand = new Uint8Array([105,115,111,109]); // isom
-    var avc1Brand = new Uint8Array([97,118,99,49]); // avc1
-    var minorVersion = new Uint8Array([0, 0, 0, 1]);
+    mp4.majorBrand = new Uint8Array([105,115,111,109]); // isom
+    mp4.avc1Brand = new Uint8Array([97,118,99,49]); // avc1
+    mp4.minorVersion = new Uint8Array([0, 0, 0, 1]);
 
-    MP4.FTYP = MP4.box(MP4.types.ftyp, majorBrand, minorVersion, majorBrand, avc1Brand);
-    MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, dref));
+    mp4.FTYP = MP4.box(MP4.types.ftyp, mp4.majorBrand, mp4.minorVersion, mp4.majorBrand, mp4.avc1Brand);
+    mp4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, mp4.dref));
   }
