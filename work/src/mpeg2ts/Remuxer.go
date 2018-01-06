@@ -29,6 +29,7 @@ type Flags struct {
 
 type Mp4Sample struct {
 	size int// unitLen,
+
 	cts int //0,
 	duration int// : 0,
 	flags Flags
@@ -317,15 +318,15 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 
 	if contiguous != 0 {
 		// if not contiguous, let's use target timeOffset
-		*nextAvcDts = timeOffset * timeScale;
+		*nextAvcDts = (float64)(timeOffset * timeScale);
 	}
 
 	// PTS is coded on 33bits, and can loop from -2^32 to 2^32
 	// ptsNormalize will make PTS/DTS value monotonic, we use last known DTS value as reference value
 	for i := 0; i < len(inputSamples); i++ {
 		//var sample Sample = inputSamples[i]
-		inputSamples[i].pts = PTSNormalize(inputSamples[i].pts-initDTS, nextAvcDts);
-		inputSamples[i].dts = PTSNormalize(inputSamples[i].dts-initDTS, nextAvcDts);
+		inputSamples[i].pts = PTSNormalize(inputSamples[i].pts-float64(initDTS), nextAvcDts);
+		inputSamples[i].dts = PTSNormalize(inputSamples[i].dts-float64(initDTS), nextAvcDts);
 	}
 	//inputSamplesforEach(function(sample) {
 	//});
@@ -341,8 +342,8 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 
 	// handle broken streams with PTS < DTS, tolerance up 200ms (18000 in 90kHz timescale)
 	var PTSDTSshift = 0.
-	for i:= 1; i< len(inputSamples); i++ {
-		PTSDTSshift = PTSDTSshift + math.Max(math.Min(inputSamples[i-1], inputSamples[i].pts-inputSamples[i].dts), -18000)
+	for i:= 0; i< len(inputSamples); i++ {
+		PTSDTSshift = math.Max(math.Min(PTSDTSshift, inputSamples[i].pts-inputSamples[i].dts), -18000)
 	}
 	if (PTSDTSshift < 0) {
 		//logger.warn(`PTS < DTS detected in video samples, shifting DTS by ${math.round(PTSDTSshift/90)} ms to overcome this issue`);
@@ -357,11 +358,11 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	firstPTS = math.Max(float64(sample.dts), 0);
 
 	// check timestamp continuity accross consecutive fragments (this is to remove inter-fragment gap/hole
-	var delta = math.Round((firstDTS - float64(*nextAvcDts)) / 90);
+	var delta = Round((firstDTS - float64(*nextAvcDts)) / 90);
 	// if fragment are contiguous, detect hole/overlapping between fragments
-	if (contiguous != 0) {
-		if (delta) {
-			if (delta > 1) {
+	if contiguous != 0 {
+		if delta != 0 {
+			if delta > 1 {
 				//logger.log(`AVC:${delta} ms hole between fragments detected,filling it`);
 			} else if (delta < -1) {
 				//logger.log(`AVC:${(-delta)} ms overlapping between fragments detected`);
@@ -380,7 +381,7 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 	// compute lastPTS/lastDTS
 	sample = inputSamples[len(inputSamples)-1];
 	lastDTS = math.Max(sample.dts, 0);
-	lastPTS = math.Max(sample.pts, 0, lastDTS);
+	lastPTS = math.Max(sample.pts, math.Max(0, lastDTS));
 
 	// on Safari let's signal the same sample duration for all samples
 	// sample duration (as expected by trun MP4 boxes), should be the delta between sample DTS
@@ -418,10 +419,10 @@ func (_this *MP4Remuxer) RemuxVideo(track VideoTrack, timeOffset, contiguous /*=
 
 	/* concatenate the video data and construct the mdat in place
 	  (need 8 more bytes to fill length and mpdat type) */
-	var mdatSize = naluLen + (4 * nbNalu) + 8;
+	var mdatSize uint32 = uint32(naluLen + (4 * nbNalu) + 8);
 	mdat= new([mdatSize]byte)
 	binary.BigEndian.PutUint32(mdat, mdatSize);
-	ArrayCopy(MP4.types.mdat,0, mdat,	4 , len(MP4.types.mdat))//todo implement MP$-generator
+	ArrayCopy(MP4.types.mdat,0, mdat,	4 , len(MP4.types.mdat))//todo implement Mp4-generator
 	for	i := 0;	i < nbSamples; i++ {
 		var avcSample= inputSamples[i]
 		var avcSampleUnits= avcSample.units
