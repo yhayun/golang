@@ -5,9 +5,7 @@ import "math"
 /**
  * Generate MP4 Box
 */
-
 //import Hex from '../utils/hex';
-
 const UINT32_MAX = math.MaxUint32;
 
 type _Types struct {
