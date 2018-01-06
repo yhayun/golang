@@ -68,6 +68,12 @@ type MP4 struct {
   DINF []uint8
 }
 
+type Track struct {
+	duration int // 0xffffffff
+	timescale int
+	id int
+}
+
 
   static hdlr(type) {
     return MP4.box(MP4.types.hdlr, MP4.HDLR_TYPES[type]);
@@ -129,20 +135,7 @@ type MP4 struct {
   static moof(sn, baseMediaDecodeTime, track) {
     return MP4.box(MP4.types.moof, MP4.mfhd(sn), MP4.traf(track,baseMediaDecodeTime));
   }
-/**
- * @param tracks... (optional) {array} the tracks associated with this movie
- */
-  static moov(tracks) {
-    var
-      i = tracks.length,
-      boxes = [];
 
-    while (i--) {
-      boxes[i] = MP4.trak(tracks[i]);
-    }
-
-    return MP4.box.apply(null, [MP4.types.moov, MP4.mvhd(tracks[0].timescale, tracks[0].duration)].concat(boxes).concat(MP4.mvex(tracks)));
-  }
 
   static mvex(tracks) {
     var
@@ -708,3 +701,51 @@ func (mp4* MP4) Box(_type []byte, payload ...[]byte) []byte {
     return result;
   }
 
+
+func (mp4* MP4) moov(tracks []Track) {
+    var i = len(tracks)
+    boxes := [][]byte{[]byte{}}
+    for i>= 0 {
+      boxes[i] = mp4.trak(tracks[i]);
+      i--
+    }
+
+    return mp4.Box.apply(null, [mp4.types.moov, mp4.mvhd(tracks[0].timescale, tracks[0].duration)].concat(boxes).concat(mp4.mvex(tracks)));
+  }
+
+  /**
+   * Generate a track box.
+   * @param track {object} a track definition
+   * @return {Uint8Array} the track box
+   */
+func (mp4* MP4) trak(track Track) []byte {
+    track.duration = track.duration || 0xffffffff;
+    return mp4.Box(mp4.types.trak, mp4.tkhd(track), mp4.mdia(track));
+  }
+
+func (mp4* MP4)  trex(track Track) []byte {
+    var id = track.id;
+    return mp4.Box(mp4.types.trex, []byte{
+      0x00, // version 0
+      0x00, 0x00, 0x00, // flags
+		(byte)(id >> 24),
+		(byte)(id >> 16) & 0XFF,
+		(byte)(id >> 8) & 0XFF,
+		(byte)(id & 0xFF), // track_ID
+      0x00, 0x00, 0x00, 0x01, // default_sample_description_index
+      0x00, 0x00, 0x00, 0x00, // default_sample_duration
+      0x00, 0x00, 0x00, 0x00, // default_sample_size
+      0x00, 0x01, 0x00, 0x01, // default_sample_flags
+	});
+  }
+
+func (mp4* MP4) mvex(tracks []Track) []byte {
+    var i = len(tracks)
+      i = tracks.length,
+      boxes = [];
+
+    while (i--) {
+      boxes[i] = MP4.trex(tracks[i]);
+    }
+    return MP4.box.apply(null, [MP4.types.mvex].concat(boxes));
+  }
