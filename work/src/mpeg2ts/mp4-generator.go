@@ -104,53 +104,53 @@ func (mp4* MP4) init() {
 //];
 //}
 //}
-  mp4.types.avc1=  [97, 118, 99, 49]
-  mp4.types.avcC=  [97, 118, 99, 67]
-  mp4.types.btrt=  [98, 116, 114, 116]
-  mp4.types.dinf=  [100, 105, 110, 102]
-  mp4.types.dref=  [100, 114, 101, 102]
-  mp4.types.esds=  [101, 115, 100, 115]
-  mp4.types.ftyp=  [102, 116, 121, 112]
-  mp4.types.hdlr=  [104, 100, 108, 114]
-  mp4.types.mdat=  [109, 100, 97, 116]
-  mp4.types.mdhd=  [109, 100, 104, 100]
-  mp4.types.mdia=  [109, 100, 105, 97]
-  mp4.types.mfhd=  [109, 102, 104, 100]
-  mp4.types.minf=  [109, 105, 110, 102]
-  mp4.types.moof=  [109, 111, 111, 102]
-  mp4.types.moov=  [109, 111, 111, 118]
-  mp4.types.mp4a=  [109, 112, 52, 97]
-  mp4.types.mvex=  [109, 118, 101, 120]
-  mp4.types.mvhd=  [109, 118, 104, 100]
-  mp4.types.pasp=  [112, 97, 115, 112]
-  mp4.types.sdtp=  [115, 100, 116, 112]
-  mp4.types.stbl=  [115, 116, 98, 108]
-  mp4.types.stco=  [115, 116, 99, 111]
-  mp4.types.stsc=  [115, 116, 115, 99]
-  mp4.types.stsd=  [115, 116, 115, 100]
-  mp4.types.stsz=  [115, 116, 115, 122]
-  mp4.types.stts=  [115, 116, 116, 115]
-  mp4.types.tfdt=  [116, 102, 100, 116]
-  mp4.types.tfhd=  [116, 102, 104, 100]
-  mp4.types.traf=  [116, 114, 97, 102]
-  mp4.types.trak=  [116, 114, 97, 107]
-  mp4.types.trun=  [116, 114, 117, 110]
-  mp4.types.trex=  [116, 114, 101, 120]
-  mp4.types.tkhd=  [116, 107, 104, 100]
-  mp4.types.vmhd=  [118, 109, 104, 100]
-  mp4.types.smhd=  [115, 109, 104, 100]
-  mp4.videoHdlr = [
-  0x00, // version 0
-  0x00, 0x00, 0x00, // flags
-  0x00, 0x00, 0x00, 0x00, // pre_defined
-  0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
-  0x00, 0x00, 0x00, 0x00, // reserved
-  0x00, 0x00, 0x00, 0x00, // reserved
-  0x00, 0x00, 0x00, 0x00, // reserved
-  0x56, 0x69, 0x64, 0x65,
-  0x6f, 0x48, 0x61, 0x6e,
-  0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
-  ]
+  mp4.types.avc1= []byte{97,118,99,49}
+  mp4.types.avcC= []byte{97,118,99,67}
+  mp4.types.btrt= []byte{98,116,114,116}
+  mp4.types.dinf= []byte{100,105,110,102}
+  mp4.types.dref= []byte{100,114,101,102}
+  mp4.types.esds= []byte{101,115,100,115}
+  mp4.types.ftyp= []byte{102,116,121,112}
+  mp4.types.hdlr= []byte{104,100,108,114}
+  mp4.types.mdat= []byte{109,100,97,116}
+  mp4.types.mdhd= []byte{109,100,104,100}
+  mp4.types.mdia= []byte{109,100,105,97}
+  mp4.types.mfhd= []byte{109,102,104,100}
+  mp4.types.minf= []byte{109,105,110,102}
+  mp4.types.moof= []byte{109,111,111,102}
+  mp4.types.moov= []byte{109,111,111,118}
+  mp4.types.mp4a= []byte{109,112,52,97}
+  mp4.types.mvex= []byte{109,118,101,120}
+  mp4.types.mvhd= []byte{109,118,104,100}
+  mp4.types.pasp= []byte{112,97,115,112}
+  mp4.types.sdtp= []byte{115,100,116,112}
+  mp4.types.stbl= []byte{115,116,98,108}
+  mp4.types.stco= []byte{115,116,99,111}
+  mp4.types.stsc= []byte{115,116,115,99}
+  mp4.types.stsd= []byte{115,116,115,100}
+  mp4.types.stsz= []byte{115,116,115,122}
+  mp4.types.stts= []byte{115,116,116,115}
+  mp4.types.tfdt= []byte{116,102,100,116}
+  mp4.types.tfhd= []byte{116,102,104,100}
+  mp4.types.traf= []byte{116,114,97,102}
+  mp4.types.trak= []byte{116,114,97,107}
+  mp4.types.trun= []byte{116,114,117,110}
+  mp4.types.trex= []byte{116,114,101,120}
+  mp4.types.tkhd= []byte{116,107,104,100}
+  mp4.types.vmhd= []byte{118,109,104,100}
+  mp4.types.smhd= []byte{115,109,104,100}
+  mp4.videoHdlr = []byte{
+    0x00,                   // version 0
+    0x00, 0x00, 0x00,       // flags
+    0x00, 0x00, 0x00, 0x00, // pre_defined
+    0x76, 0x69, 0x64, 0x65, // handler_type: 'vide'
+    0x00, 0x00, 0x00, 0x00, // reserved
+    0x00, 0x00, 0x00, 0x00, // reserved
+    0x00, 0x00, 0x00, 0x00, // reserved
+    0x56, 0x69, 0x64, 0x65,
+    0x6f, 0x48, 0x61, 0x6e,
+    0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
+  }
 
     //var audioHdlr = new Uint8Array([
     //  0x00, // version 0
@@ -170,57 +170,59 @@ func (mp4* MP4) init() {
     //  'audio': audioHdlr
     //};
 
-    mp4.dref = [
+    mp4.dref = []byte{
+  0x00,             // version 0
+  0x00, 0x00, 0x00, // flags
+  0x00, 0x00, 0x00, 0x01, // entry_count
+  0x00, 0x00, 0x00, 0x0c, // entry_size
+  0x75, 0x72, 0x6c, 0x20, // 'url' type
+  0x00,                   // version 0
+  0x00, 0x00, 0x01        // entry_flags
+  }
+
+     mp4.stco = []byte{
+  0x00,             // version
+  0x00, 0x00, 0x00, // flags
+  0x00, 0x00, 0x00, 0x00 // entry_count
+  }
+
+    mp4.STTS = mp4.stco
+    mp4.STSC = mp4.stco
+    mp4.STCO = mp4.stco;
+
+    mp4.STSZ = []byte{
+  0x00,             // version
+  0x00, 0x00, 0x00, // flags
+  0x00, 0x00, 0x00, 0x00, // sample_size
+  0x00, 0x00, 0x00, 0x00, // sample_count
+  }
+
+mp4.VMHD = []byte{
+  0x00,             // version
+  0x00, 0x00, 0x01, // flags
+  0x00, 0x00,       // graphicsmode
+  0x00, 0x00,
+  0x00, 0x00,
+  0x00, 0x00 // opcolor
+}
+    mp4.SMHD = []byte{
+      0x00,             // version
+      0x00, 0x00, 0x00, // flags
+      0x00, 0x00,       // balance
+      0x00, 0x00        // reserved
+    }
+
+    mp4.STSD = []byte{
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x01, // entry_count
-      0x00, 0x00, 0x00, 0x0c, // entry_size
-      0x75, 0x72, 0x6c, 0x20, // 'url' type
-      0x00, // version 0
-      0x00, 0x00, 0x01 // entry_flags
-    ]
+      0x00, 0x00, 0x00, 0x01}// entry_count
 
-     mp4.stco = [
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00 // entry_count
-    ]
+    mp4.majorBrand = []byte{105,115,111,109}; // isom
+    mp4.avc1Brand = []byte{97,118,99,49}; // avc1
+    mp4.minorVersion = []byte{0, 0, 0, 1};
 
-    mp4.STTS = mp4.STSC = mp4.STCO = stco;
-
-    mp4.STSZ = [
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x00, // sample_size
-      0x00, 0x00, 0x00, 0x00, // sample_count
-    ]
-
-mp4.VMHD = [
-      0x00, // version
-      0x00, 0x00, 0x01, // flags
-      0x00, 0x00, // graphicsmode
-      0x00, 0x00,
-      0x00, 0x00,
-      0x00, 0x00 // opcolor
-    ]
-    mp4.SMHD = [
-      0x00, // version
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, // balance
-      0x00, 0x00 // reserved
-    ]
-
-    mp4.STSD = [
-      0x00, // version 0
-      0x00, 0x00, 0x00, // flags
-      0x00, 0x00, 0x00, 0x01]// entry_count
-
-    mp4.majorBrand = new Uint8Array([105,115,111,109]); // isom
-    mp4.avc1Brand = new Uint8Array([97,118,99,49]); // avc1
-    mp4.minorVersion = new Uint8Array([0, 0, 0, 1]);
-
-mp4.FTYP = MP4.box(MP4.types.ftyp, mp4.majorBrand, mp4.minorVersion, mp4.majorBrand, mp4.avc1Brand);
-mp4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, mp4.dref));
+mp4.FTYP = mp4.Box(mp4.types.ftyp, mp4.majorBrand, mp4.minorVersion, mp4.majorBrand, mp4.avc1Brand);
+mp4.DINF = mp4.Box(mp4.types.dinf, mp4.Box(mp4.types.dref, mp4.dref));
   }
 
 func (mp4* MP4) Sdtp(track Track) []byte{
