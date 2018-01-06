@@ -82,18 +82,18 @@ type Track struct {
 
 
 
-  static initSegment(tracks) {
-    if (!MP4.types) {
-      MP4.init();
-    }
-    var movie = MP4.moov(tracks), result;
-    result = new Uint8Array(MP4.FTYP.byteLength + movie.byteLength);
-    result.set(MP4.FTYP);
-    result.set(movie, MP4.FTYP.byteLength);
-    return result;
-  }
 }
-
+func (mp4* MP4) InitSegment(tracks Tracks) []byte{
+  if (!mp4.types) {
+    mp4.init();
+  }
+  var movie []byte = mp4.moov(tracks)
+  var result []byte
+  result = make([]uint8,len(mp4.FTYP) + len(movie));
+  ArrayCopy(mp4.FTYP,0,result, 0 ,len(mp4.FTYP))
+  ArrayCopy(movie,0,result, len(mp4.FTYP) ,len(movie))
+  return result;
+}
 export default MP4;
 
 init(mp4 *MP4) {
@@ -314,15 +314,14 @@ func (mp4* MP4) stbl(track Track) []byte {
 	return mp4.Box(mp4.types.stbl, mp4.stsd(track), mp4.Box(mp4.types.stts, mp4.STTS), mp4.Box(mp4.types.stsc, mp4.STSC), mp4.Box(mp4.types.stsz, mp4.STSZ), mp4.Box(mp4.types.stco, mp4.STCO));
 }
 
-func (mp4* MP4) moov(tracks []Track) {
+func (mp4* MP4) moov(tracks []Track) []byte{
     var i = len(tracks)
     boxes := [][]byte{[]byte{}}
     for i>= 0 {
       boxes[i] = mp4.trak(tracks[i]);
       i--
     }
-
-    return mp4.Box.apply(null, [mp4.types.moov, mp4.mvhd(tracks[0].timescale, tracks[0].duration)].concat(boxes).concat(mp4.mvex(tracks)));
+    return  append(append(mp4.types.moov, mp4.mvhd(tracks[0].timescale, tracks[0].duration)...),boxes...)
   }
 
   /**
