@@ -72,7 +72,7 @@ type Track struct {
 	id int
 	width int
 	height int
-	_type string
+	_type []byte
 	sps [][]byte
 	pps [][]byte
 	pixelRatio [2]byte
@@ -250,8 +250,8 @@ func (mp4* MP4) Traf(track Track, baseMediaDecodeTime int) []byte{
   byte(id >> 24),
   byte(id >> 16) & 0XFF,
   byte(id >> 8) & 0XFF,
-  byte(id & 0xFF)}) // track_ID
-  ,mp4.Box(mp4.types.tfdt, []byte{
+  byte(id & 0xFF)}), // track_ID
+  mp4.Box(mp4.types.tfdt, []byte{
   0x01,             // version 1
   0x00, 0x00, 0x00, // flags
   byte(upperWordBaseMediaDecodeTime >>24),
@@ -261,7 +261,7 @@ func (mp4* MP4) Traf(track Track, baseMediaDecodeTime int) []byte{
   byte(lowerWordBaseMediaDecodeTime >>24),
   byte(lowerWordBaseMediaDecodeTime >> 16) & 0XFF,
   byte(lowerWordBaseMediaDecodeTime >> 8) & 0XFF,
-  byte((lowerWordBaseMediaDecodeTime) & 0xFF)
+  byte((lowerWordBaseMediaDecodeTime) & 0xFF),
   }),mp4.Trun(track,
                     len(sampleDependencyTable) +
                     16 + // tfhd
@@ -311,9 +311,9 @@ func (mp4* MP4) stbl(track Track) []byte {
 
 func (mp4* MP4) moov(tracks []Track) []byte{
     var i = len(tracks)
-    boxes := [][]byte{[]byte{}}
+    var boxes []byte
     for i>= 0 {
-      boxes[i] = mp4.trak(tracks[i]);
+      boxes = append(boxes,mp4.trak(tracks[i])...)
       i--
     }
     return  append(append(mp4.types.moov, mp4.mvhd(tracks[0].timescale, tracks[0].duration)...),boxes...)
@@ -364,13 +364,14 @@ func (mp4* MP4) minf(track Track) []byte{
 
 func (mp4* MP4) mvex(tracks []Track) []byte {
     var i = len(tracks)
-	boxes := [][]byte{[]byte{}}
+	var boxes []byte
 
 	for i>= 0 {
-		boxes[i] = mp4.trex(tracks[i]);
+		boxes = append(boxes,mp4.trex(tracks[i])...)
 		i--
 	}
-    return mp4.Box.apply(null, [mp4.types.mvex].concat(boxes));
+
+	return mp4.Box(append(mp4.types.mvex,boxes...))
   }
 
 
@@ -450,7 +451,7 @@ func (mp4* MP4) mvhd (timescale int ,duration int) []byte {
   }
 
 func (mp4* MP4) mdia(track Track) []byte {
-	return mp4.Box(mp4.types.mdia, MP4.mdhd(track.timescale, track.duration), MP4.hdlr(track.type), MP4.minf(track));
+	return mp4.Box(mp4.types.mdia, mp4.mdhd(track.timescale, track.duration), mp4.hdlr(track._type), mp4.minf(track));
 }
 
 func (mp4* MP4) avc1(track Track) []byte {
