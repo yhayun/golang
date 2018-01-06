@@ -72,6 +72,9 @@ type Track struct {
 	duration int // 0xffffffff
 	timescale int
 	id int
+	width int
+	height int
+	_type string
 }
 
 
@@ -651,6 +654,14 @@ func (mp4* MP4) Box(_type []byte, payload ...[]byte) []byte {
     return result;
   }
 
+func (mp4* MP4) hdlr(_type []byte) []byte {
+	return mp4.Box(mp4.types.hdlr, mp4.videoHdlr);
+}
+
+func (mp4* MP4) stbl(track Track) []byte {
+	return mp4.Box(mp4.types.stbl, mp4.stsd(track), mp4.Box(mp4.types.stts, mp4.STTS), mp4.Box(mp4.types.stsc, mp4.STSC), mp4.Box(mp4.types.stsz, mp4.STSZ), mp4.Box(mp4.types.stco, mp4.STCO));
+}
+
 func (mp4* MP4) moov(tracks []Track) {
     var i = len(tracks)
     boxes := [][]byte{[]byte{}}
@@ -672,6 +683,16 @@ func (mp4* MP4) trak(track Track) []byte {
     return mp4.Box(mp4.types.trak, mp4.tkhd(track), mp4.mdia(track));
   }
 
+func (mp4* MP4) stsd(track Track) []byte {
+    //if (track.type === 'audio') {
+    //  if (!track.isAAC && track.codec === 'mp3') {
+    //    return MP4.box(MP4.types.stsd, MP4.STSD, MP4.mp3(track));
+    //  }
+    //  return MP4.box(MP4.types.stsd, MP4.STSD, MP4.mp4a(track));
+    //}
+      return mp4.Box(mp4.types.stsd, mp4.STSD, mp4.avc1(track))
+  }
+
 func (mp4* MP4)  trex(track Track) []byte {
     var id = track.id;
     return mp4.Box(mp4.types.trex, []byte{
@@ -688,15 +709,152 @@ func (mp4* MP4)  trex(track Track) []byte {
 	});
   }
 
+func (mp4* MP4) minf(track Track) []byte{
+    //if (track._type == 'audio') {  <---- AUDIO ! WE DONT DO AUDIO!!
+    //  return MP4.box(MP4.types.minf, MP4.box(MP4.types.smhd, MP4.SMHD), MP4.DINF, MP4.stbl(track));
+    //}
+      return mp4.Box(mp4.types.minf, mp4.Box(mp4.types.vmhd, mp4.VMHD), mp4.DINF, mp4.stbl(track));
+  }
+
 func (mp4* MP4) mvex(tracks []Track) []byte {
     var i = len(tracks)
-      i = tracks.length,
-      boxes = [];
+	boxes := [][]byte{[]byte{}}
 
-    while (i--) {
-      boxes[i] = MP4.trex(tracks[i]);
-    }
-    return MP4.box.apply(null, [MP4.types.mvex].concat(boxes));
+	for i>= 0 {
+		boxes[i] = mp4.trex(tracks[i]);
+		i--
+	}
+    return mp4.Box.apply(null, [mp4.types.mvex].concat(boxes));
+  }
+
+
+func (mp4* MP4) mdhd(timescale int , duration int ) []byte {
+    duration *= timescale;
+	upperWordDuration := int(math.Floor((float64(duration / (UINT32_MAX + 1)))))
+	lowerWordDuration := int(math.Floor(float64(duration % (UINT32_MAX + 1))))
+    return mp4.Box(mp4.types.mdhd,  []byte{
+		0x01,                                           // version 1
+		0x00, 0x00, 0x00,                               // flags
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // creation_time
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // modification_time
+		(byte)(timescale >> 24) & 0xFF,
+		(byte)(timescale >> 16) & 0xFF,
+		(byte)(timescale >> 8) & 0xFF,
+		(byte)(timescale & 0xFF), // timescale
+		(byte)(upperWordDuration >> 24),
+		(byte)(upperWordDuration >> 16) & 0xFF,
+		(byte)(upperWordDuration >> 8) & 0xFF,
+		(byte)(upperWordDuration & 0xFF),
+		(byte)(lowerWordDuration >> 24),
+		(byte)(lowerWordDuration >> 16) & 0xFF,
+		(byte)(lowerWordDuration >> 8) & 0xFF,
+		(byte)(lowerWordDuration & 0xFF),
+		0x55, 0xc4, // 'und' language (undetermined)
+		0x00, 0x00,
+	});
+  }
+
+
+func (mp4* MP4) mvhd (timescale int ,duration int) []byte {
+    duration*=timescale
+     upperWordDuration := int(math.Floor((float64(duration / (UINT32_MAX + 1)))))
+     lowerWordDuration := int(math.Floor(float64(duration % (UINT32_MAX + 1))))
+    var
+      bytes =  []byte{
+		0x01,                                           // version 1
+		0x00, 0x00, 0x00,                               // flags
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // creation_time
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // modification_time
+		  (byte)(timescale >> 24) & 0xFF,
+		  (byte)(timescale >> 16) & 0xFF,
+		  (byte)(timescale >> 8) & 0xFF,
+		  (byte)(timescale & 0xFF), // timescale
+		  (byte)(upperWordDuration >> 24),
+		  (byte)(upperWordDuration >> 16) & 0xFF,
+		  (byte)(upperWordDuration >> 8) & 0xFF,
+		  (byte)(upperWordDuration & 0xFF),
+		  (byte)(lowerWordDuration >> 24),
+		  (byte)(lowerWordDuration >> 16) & 0xFF,
+	 	 (byte)(lowerWordDuration >> 8) & 0xFF,
+	 	 (byte)(lowerWordDuration & 0xFF),
+		0x00, 0x01, 0x00, 0x00, // 1.0 rate
+		0x01, 0x00,             // 1.0 volume
+		0x00, 0x00,             // reserved
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x40, 0x00, 0x00, 0x00, // transformation: unity matrix
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, // pre_defined
+		0xff, 0xff, 0xff, 0xff, // next_track_ID
+	};
+
+    return mp4.Box(mp4.types.mvhd, bytes);
+  }
+
+func (mp4* MP4) mdia(track Track) []byte {
+	return mp4.Box(mp4.types.mdia, MP4.mdhd(track.timescale, track.duration), MP4.hdlr(track.type), MP4.minf(track));
+}
+
+func (mp4* MP4) tkhd(track Track) []byte {
+    var id = track.id
+    var duration = track.duration*track.timescale
+    var width = track.width
+    var height = track.height
+	upperWordDuration := int(math.Floor((float64(duration / (UINT32_MAX + 1)))))
+	lowerWordDuration := int(math.Floor(float64(duration % (UINT32_MAX + 1))))
+
+    return mp4.Box(mp4.types.tkhd, []byte{
+		0x01,                                           // version 1
+		0x00, 0x00, 0x07,                               // flags
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // creation_time
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // modification_time
+		(byte)(id >> 24) & 0xFF,
+		(byte)(id >> 16) & 0xFF,
+		(byte)(id >> 8) & 0xFF,
+		(byte)(id & 0xFF),              // track_ID
+		0x00, 0x00, 0x00, 0x00, // reserved
+		(byte)(upperWordDuration >> 24),
+		(byte)(upperWordDuration >> 16) & 0xFF,
+		(byte)(upperWordDuration >> 8) & 0xFF,
+		(byte)(upperWordDuration & 0xFF),
+		(byte)(lowerWordDuration >> 24),
+		(byte)(lowerWordDuration >> 16) & 0xFF,
+		(byte)(lowerWordDuration >> 8) & 0xFF,
+		(byte)(lowerWordDuration & 0xFF),
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, // reserved
+		0x00, 0x00,             // layer
+		0x00, 0x00,             // alternate_group
+		0x00, 0x00,             // non-audio track volume
+		0x00, 0x00,             // reserved
+		0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x40, 0x00, 0x00, 0x00, // transformation: unity matrix
+		(byte)(width >> 8) & 0xFF,
+		(byte)(width & 0xFF),
+		0x00, 0x00, // width
+		(byte)(height >> 8) & 0xFF,
+		(byte)(height & 0xFF),
+		0x00, 0x00, // height
+	});
   }
 
 
