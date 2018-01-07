@@ -240,7 +240,6 @@ func FrameQueueDispatcherFullFile(videoFrames frameQueue) {
 	}
 	fmt.Println("left FrameQueueDispatcher loop.")
 	WriteFile(h264Buffer[:22500000],"tempfile1.264");
-	Done <- true
 }
 
 
@@ -299,22 +298,7 @@ func FrameQueueDispatcher(videoFrames frameQueue) {
 
 	}
 	fmt.Println("left FrameQueueDispatcher loop.")
-	Done <- true
 }
 
 
 
-
-
-//Used to force main thread to go to sleep so we can handle when program stops running.
-var Done = make(chan bool)
-
-func main() {
-	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
-	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
-	var uSource UdpSource = *NewUdpSource(100, videoFrames)
-	fmt.Println("working on UDP");
-	go uSource.FrameQueueFiller()
-	go FrameQueueDispatcher(videoFrames)
-	<-Done
-}
