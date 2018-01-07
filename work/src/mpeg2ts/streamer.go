@@ -35,7 +35,6 @@ func streamHnandler(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusNotFound)
 		return
 	}
-	fmt.Println("here")
 	segName, _ := vars["segName"]
 	mediaBase := getMediaBase(mId)
 	serveHlsTls(response, request, mediaBase, segName)
@@ -43,9 +42,8 @@ func streamHnandler(response http.ResponseWriter, request *http.Request) {
 
 
 func Handlers() *mux.Router {
-	fmt.Println("router")
 	router :=  mux.NewRouter()
-	router.HandleFunc("/media/stream/test", streamHnandler).Methods("GET")
+	router.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHnandler).Methods("GET")
 	return router
 }
 
