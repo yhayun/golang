@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 const UDP_SIZE = 1500
-const FRAME_SIZE = 5000000; // 5MB
+const FRAME_SIZE = 1000000; // 1MB
 const MPEG2TS_PACKET_LENGTH = 188
 const MAX_UDP_PACKET_SIZE = 1500;
 
@@ -279,18 +279,26 @@ func FrameQueueDispatcher(videoFrames frameQueue) {
 			}
 		}
 
+		//we have alot 0 sized p_frames...dunno why, but lets skip this for now:
+		if (frame.Size() == 0) {
+			videoFrames.Recylce(frame)
+			continue
+		}
+
 		counter++
 		if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
 			i_counter++
 			p_counter = 0
-			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>__size_%d", counter,i_counter,p_counter,i_type,frame.Size())
+			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>____size_%d-----", counter,i_counter,p_counter,i_type,frame.Size())
 		} else {
 			p_counter++;
-			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>", counter,i_counter,p_counter,p_type)
-
+			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>____size_%d", counter,i_counter,p_counter,p_type,frame.Size())
 		}
 
-		WriteFile(frame.GetData(),s)
+		fmt.Println("file: ",counter)
+		actualData := frame.GetData()[:frame.Size()]
+		WriteFile(actualData,s)
+		WriteFile(actualData,fmt.Sprint("../../media/",counter))
 		videoFrames.Recylce(frame)
 		if (counter >= 500){
 			break;

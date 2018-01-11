@@ -8833,7 +8833,7 @@ var TSDemuxer = function () {
               }
             }
           }
-          // check if we can read unit type
+          check if we can read unit type
           if (i < len) {
             unitType = array[i] & 0x1f;
             //logger.log('find NALU @ offset:' + i + ',type:' + unitType);
