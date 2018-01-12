@@ -9,7 +9,7 @@ import (
 )
 
 
-var counter int = 0
+var counter int = 1
 
 func getMediaBase(mId int) string{
 	mediaRoot := "assessts/media"

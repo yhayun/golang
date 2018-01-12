@@ -1,5 +1,6 @@
 //temp to emulate xmlhttprequest on node:
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var Flow = require("./flow.js")
 
 var baseUrl = "http://localhost:8000/media/stream/test/1";
 var binaryClient = new BinaryHttpClient();
@@ -7,7 +8,10 @@ var queue  = [];
 var initFlag = false
 //Run Queue Filler:
 FillQueue();
-//end
+/**
+ *  Calling order: FillQueue() -> (retriveData() <-> handleLoop()). in handle loop once we have enough frames
+ *  we can start handling the data.
+ */
 
     function  FillQueue() {
         var xmlhttp = new XMLHttpRequest();
@@ -16,13 +20,14 @@ FillQueue();
 	};
 
 	function handleLoop() {
-		if (queue.length == 100) {
-			console.log("done")
+		if (queue.length == 1) {
+			console.log("Queue ready:")
+			var result = Flow.demuxerTS._parseAVCNALu(queue[0])
+			console.log("units: ",result)
 			return
 		}
 		retrieveData()
 	}
-
 
 
     function BinaryHttpClient() {
@@ -69,11 +74,6 @@ FillQueue();
             handleLoop()
         });     
     }
-
-
-
-
-
 
 
 // our server sends the file as texts, we need to convert it to bytearray for this to work

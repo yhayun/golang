@@ -2757,6 +2757,7 @@ class TSDemuxer {
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
+var _sample = new Uint8Array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 
 
 class _observer {
@@ -2778,13 +2779,16 @@ var _config = {
 
 }
 
+
 console.log("init");
 var remuxer = new MP4Remuxer(_observer, _config,_typeSupported, undefined);
 var demuxerTS = new TSDemuxer(_observer, remuxer, _config, _typeSupported);
 demuxerTS.resetInitSegment({}, 'audioCodec', 'videoCodec', undefined)
 console.log("after init");
 
-var result = demuxerTS._parseAVCNALu(55555555)
-console.log("units: ",result)
+// var result = demuxerTS._parseAVCNALu(_sample)
+// console.log("units: ",result)
+
+module.exports = {remuxer, demuxerTS};
 
 
