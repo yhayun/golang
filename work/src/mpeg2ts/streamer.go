@@ -31,7 +31,7 @@ func serveHlsTls( w http.ResponseWriter, r *http.Request, mediabase, segName str
 	w.Header().Set("Content-Type", "video/MP2T")
 }
 
-func streamHnandler(response http.ResponseWriter, request *http.Request) {
+func streamHandler(response http.ResponseWriter, request *http.Request) {
 	fmt.Println("streamHandler")
 	vars := mux.Vars(request)
 	mId, err := strconv.Atoi(vars["mId"])
@@ -47,7 +47,7 @@ func streamHnandler(response http.ResponseWriter, request *http.Request) {
 
 func Handlers() *mux.Router {
 	router :=  mux.NewRouter()
-	router.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHnandler).Methods("GET")
+	router.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandler).Methods("GET")
 	return router
 }
 
@@ -72,5 +72,35 @@ func RunServer () {
 //}
 
 func main() {
-	RunServer()
+	RunServer2()
+}
+
+
+
+// https://stackoverflow.com/questions/22452804/angularjs-http-get-request-failed-with-custom-header-alllowed-in-cors
+func RunServer2() {
+	r := mux.NewRouter()
+	r.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandler)
+	http.Handle("/", &MyServer{r})
+	http.ListenAndServe(":8000", nil);
+
+}
+
+type MyServer struct {
+	r *mux.Router
+}
+
+func (s *MyServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if origin := req.Header.Get("Origin"); origin != "" {
+		rw.Header().Set("Access-Control-Allow-Origin", origin)
+		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		rw.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+	// Stop here if its Preflighted OPTIONS request
+	if req.Method == "OPTIONS" {
+		return
+	}
+	// Lets Gorilla work
+	s.r.ServeHTTP(rw, req)
 }

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebStreamer</title>
+</head>
+<body>
+    
+    <div>
+        Video IP - for unicast 127.0.0.1:<br>
+        <input id="videoIP" type="text" value="127.0.0.1" />
+        <br>
+        
+        Video port:<br>
+        <input id="videoPort" type="text" value="8878" />
+        <br>
+    
+        Server side queue size [Number of GOPs]:<br>
+        <input id="serverQueueSize" type="text" value="100" />
+        <br>
+        
+        Client side queue size [Number of GOPs]:<br>
+        <input id="clientQueueSize" type="text" value="2" />
+        <br>
+        
+        Upper limit [Seconds]:<br>
+        <input id="upperLimit" type="text" value="1.0" />
+        <br>
+        
+        Desired offset from end time [Seconds]:<br>
+        <input id="liveOffset" type="text" value="1.5" />   
+        <br>    
+        
+        Lower limit [Seconds]:<br>
+        <input id="lowerLimit" type="text" value="2.0" />
+        <br>
+    
+    </div>
+    <div>
+        <input type="submit" value="Start" onclick="start()" />
+    </div>
+                <div>
+            <video id="video" controls autoplay class="videoCentered"></video>
+            </div>
+    <div id="messages"></div>
+    <div id="videoContainer"></div>
+    <script src="hls.light.min.js"></script> 
+    <script language="javascript" type="text/javascript">
+
+
+  if(Hls.isSupported()) {
+    console.log("HLS supported")
+    var video = document.getElementById('video');
+    var hls = new Hls();
+    hls.loadSource('http://localhost:8000/media/stream/test/1');
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED,function() {
+      video.play();
+  });
+ } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = 'https://video-dev.github.io/streams/x36xhzz/x36xhzz.m3u8';
+    video.addEventListener('canplay',function() {
+      video.play();
+    });
+  }
+
+
+
+
+
+
+    
+    var videoIP             = null;
+    var videoPort           = -1;
+    var serverQueueSize     = -1;
+    var queue               = [];
+    var videoSource         = null;
+    var sessionId           = null;
+    var baseUrl             = "http://127.0.0.1:8080/StreamingRest/Rest?";
+    var videoElement        = document.getElementById("myVideo");
+    var initFlag            = false;
+    var initialization      = null;
+    var bufferUpdated       = false;
+    var getUrl              = null;
+    var binaryClient        = null; 
+    var mediaSource         = null;
+    var i                   = 0;
+    var lastMessageTime     = -1;
+    var lastMessageTimeout  = 3000;
+    var previousTime        = -1;
+    var clientQueueSize     = -1;
+    var upperLimit          = -1;
+    var liveOffset          = -1;
+    var lowerLimit          = -1;       
+    var mimeCodec           = 'video/mp4; codecs="avc1.4d401e"';
+
+    initVideoConteiner();
+
+    
+    
+    videoIP         = document.getElementById('videoIP').value;
+    videoPort       = parseInt(document.getElementById('videoPort').value);
+    serverQueueSize = parseInt(document.getElementById('serverQueueSize').value);
+    clientQueueSize = parseInt(document.getElementById('clientQueueSize').value);
+    upperLimit      = parseFloat(document.getElementById('upperLimit').value);
+    liveOffset      = parseFloat(document.getElementById('liveOffset').value);
+    lowerLimit      = parseFloat(document.getElementById('lowerLimit').value);          
+
+
+    
+    
+    function start() {
+
+        console.log('Start invoked!')
+        
+        
+
+        if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
+            console.log('Preparing mediaSource ...!')
+            mediaSource = new MediaSource;
+            console.log("mediaSource.readyState: "+mediaSource.readyState); // closed
+            videoElement.src = URL.createObjectURL(mediaSource);
+            mediaSource.addEventListener('sourceopen', sourceOpen);
+          } else {
+            console.error('Unsupported MIME type or codec: ', mimeCodec);
+          }
+    }
+
+
+    function sourceOpen (_) {
+
+
+        console.log("Current mediaSource.readyState: " +  this.readyState); // open
+        var mediaSource = this;
+            videoSource = mediaSource.addSourceBuffer(mimeCodec);
+
+        var xmlhttp = new XMLHttpRequest();
+
+        
+        var url = baseUrl+"action=init&videoIP="+videoIP+
+                            "&videoPort="+videoPort+"&initialTime=0&serverQueueSize="+serverQueueSize;
+
+        console.log('url: '             + url)
+
+        var client = new HttpClient();
+
+        console.log("Invoking init ..."); 
+        client.get(url, function(response) {
+            sessionId = response;
+            console.log('Got session id: ' + sessionId)
+
+            getUrl         = baseUrl+"action=getData&sessionId="+sessionId;
+            console.log("getUrl: " + getUrl); 
+            binaryClient   = new BinaryHttpClient();    
+            retrieverID = setInterval(retrieveData, 1000);
+        });
+        
+    };
+
+      
+    
+
+    function startPlayback() {
+        return videoElement.play();
+    }
+    
+
+
+    function retrieveDatatest() {
+
+        console.log('Retrieving data using url: ' + getUrl);
+
+        var byteArray = null;
+
+        lastMessageTime = new Date().getTime();
+
+        binaryClient.get(getUrl, function(byteArray) {
+
+            if (byteArray.byteLength == 0) {
+                console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
+                return;
+            }
+            
+            console.log('Got data: ' + byteArray.byteLength);
+            
+            queue.push(byteArray);
+
+            console.log('queue.length: ' + queue.length);
+
+            
+        });     
+    }
+
+
+
+
+    function retrieveData() {
+
+        console.log('Retrieving data using url: ' + getUrl);
+
+        var byteArray = null;
+
+        lastMessageTime = new Date().getTime();
+
+        binaryClient.get(getUrl, function(byteArray) {
+
+            if (byteArray.byteLength == 0) {
+                console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
+                return;
+            }
+            
+            if(initFlag == false) {
+                console.log('Got data first time: ' + byteArray.byteLength);
+                
+                initFlag = true;
+                
+                initialization = new Int8Array(byteArray);
+    
+                videoElement.loop = false;
+                videoElement.autoplay = true;
+                videoElement.play();
+                
+                console.log("mediaSource.readyState: "+mediaSource.readyState); 
+                
+                //console.log('Attempting to play !');
+
+                /*
+                videoElement.play().then(function() {
+                    console.log('The play() Promise fulfilled! Rock on!');
+
+                    videoSource.appendBuffer(initialization);
+                    // Wait for the update complete event before continuing
+                    videoSource.addEventListener("update",updateFunct, false);      
+                    buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 100);  
+                    
+                    queue.push(byteArray); 
+                    return;
+                    
+                }).catch(function(error) {
+                    console.log('The play() Promise rejected!');
+                    console.log('Use the Play button instead.');
+                    console.log(error);
+                });
+                */
+                                                                
+                videoSource.appendBuffer(initialization);
+                // Wait for the update complete event before continuing
+                videoSource.addEventListener("update",updateFunct, false);      
+                buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 100);  
+                
+                queue.push(byteArray); 
+                return;
+            
+//              console.log('after promise ...');
+                
+            }
+
+            console.log('Got data: ' + byteArray.byteLength);
+            
+            queue.push(byteArray);
+
+            console.log('queue.length: ' + queue.length);
+
+            
+        });     
+    }
+    
+
+    function updateFunct() {                        
+        bufferUpdated = true;
+        videoSource.removeEventListener("update", updateFunct);
+    }
+
+    
+
+    var BinaryHttpClient = function() {
+        this.get = function(aUrl, aCallback) {
+            var anHttpRequest = new XMLHttpRequest();
+            anHttpRequest.open( "GET", aUrl, true );            
+            anHttpRequest.responseType = "arraybuffer";
+            
+            anHttpRequest.onload = function (oEvent) {
+                  var arrayBuffer = anHttpRequest.response; 
+                  if (arrayBuffer) {
+                    var byteArray = new Uint8Array(arrayBuffer);
+                    aCallback(byteArray);
+                    //for (var i = 0; i < byteArray.byteLength; i++) {
+                    //  console.log('Got data: ' + url);
+                    //}
+                  }
+            };
+            
+            anHttpRequest.send( null );
+        }
+    }
+    
+
+    var HttpClient = function() {
+        this.get = function(aUrl, aCallback) {
+            var anHttpRequest = new XMLHttpRequest();
+            anHttpRequest.onreadystatechange = function() { 
+                if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
+                    aCallback(anHttpRequest.responseText);
+            }
+            anHttpRequest.open( "GET", aUrl, true );            
+            anHttpRequest.send( null );
+        }
+    }
+
+
+    function initVideoConteiner(){
+        console.log('Video conteiner init ...')
+
+        videoElement = document.createElement("video");
+        videoElement.id = 'myVideo';
+        videoElement.autoPlay = true;
+        videoElement.setAttribute("controls","controls")  
+        
+        var videoContainer = document.getElementById('videoContainer');
+        videoContainer.appendChild(videoElement);
+    
+        //mediaSource = new MediaSource();
+        //url = URL.createObjectURL(mediaSource);
+        videoElement.pause();
+        //videoElement.src = url;
+        videoElement.width = 720;
+        videoElement.height = 576;
+
+        console.log('Video conteiner initialized!')
+    }
+
+
+    function timingCheck() {
+        
+        /*if(lastMessageTime != -1) {
+            console.log("lastMessageTime: " + lastMessageTime);
+            var diff = new Date().getTime() - lastMessageTime;
+            console.log("diff: " + diff);
+            if (diff > lastMessageTimeout) {
+                lastMessageTime = -1; //new Date().getTime();
+                console.log("diff > lastMessageTimeout");
+                return;
+            }
+        }
+                    
+        
+        if(previousTime == -1) {
+            console.log("previousTime = -1: " + previousTime);
+            previousTime = videoElement.currentTime;
+            console.log("new previousTime: " + previousTime);
+        }
+        else {
+            console.log("previousTime: " + previousTime);
+            if((videoElement.currentTime - previousTime) < 0.1) {
+                console.log("(videoElement.currentTime - previousTime) = " + (videoElement.currentTime - previousTime));    
+                videoElement.currentTime = videoElement.seekable.end(0) - liveOffset;
+                previousTime = -1;
+            }
+        }   */
+        
+        var diff = videoElement.seekable.end(0) - videoElement.currentTime;
+
+        console.log("diff: " + diff);
+
+        if ((diff < upperLimit) || (diff > lowerLimit)) {
+            videoElement.currentTime = videoElement.seekable.end(0) - liveOffset;
+            videoElement.play();
+            console.log("diff is = " + diff);   
+        } else {
+            console.log("esle diff < upperLimit) || (diff > lowerLimit");
+        }
+    }
+
+    
+
+    function addBufferFromQueue() {
+        
+        if (queue.length > 0 && !videoSource.updating) {                
+            videoSource.appendBuffer(new Int8Array(queue.shift()));
+            i++;
+            if(i == clientQueueSize) {
+                videoElement.play();                    
+                timingCheckIntervalID = setInterval(timingCheck, 1000);
+            }
+        }
+    }
+    
+    </script>
+</body>
+</html>
