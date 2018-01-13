@@ -2789,6 +2789,6 @@ console.log("after init");
 // var result = demuxerTS._parseAVCNALu(_sample)
 // console.log("units: ",result)
 
-module.exports = {remuxer, demuxerTS};
+module.exports = {remuxer, demuxerTS, ExpGolomb};
 
 

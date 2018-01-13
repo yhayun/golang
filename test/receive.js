@@ -20,13 +20,24 @@ FillQueue();
 	};
 
 	function handleLoop() {
-		if (queue.length == 1) {
+		if (queue.length == 500) {
 			console.log("Queue ready:")
-			var result = Flow.demuxerTS._parseAVCNALu(queue[0])
-			console.log("units: ",result)
-			return
+			return ProcessQueue();
 		}
 		retrieveData()
+	}
+
+	function ProcessQueue() {
+		var units = Flow.demuxerTS._parseAVCNALu(queue[0])
+		console.log("units: ",units)
+
+		for (var i =3; i <units.length; i++) {
+			console.log("type:", units[i].type)
+			expGolombDecoder = new Flow.ExpGolomb(units[i].data);
+			var config = expGolombDecoder.readSPS();
+			console.log("config:", config)
+		}
+		return
 	}
 
 
@@ -46,6 +57,9 @@ FillQueue();
 	                  }
               	} else {
               		console.log("Request failed with status:",anHttpRequest.status)
+              		if (queue.length != 0) {
+              			ProcessQueue();
+              		}
               	}
             };       
             anHttpRequest.send( null );
