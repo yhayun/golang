@@ -6,6 +6,7 @@ var baseUrl = "http://localhost:8000/media/stream/test/1";
 var binaryClient = new BinaryHttpClient();
 var queue  = [];
 var initFlag = false
+var counter = 0
 //Run Queue Filler:
 FillQueue();
 /**
@@ -41,10 +42,33 @@ FillQueue();
 		// 	}			
 		// }
 
-		var units = Flow.demuxerTS._parseAVCNALu(queue[1])
-		console.log("units: ",units)
+		writeQueueToFIle();
+
+		// var units = Flow.demuxerTS._parseAVCNALu(queue[0])
+		// console.log("units: ",units)
+		// expGolombDecoder = new Flow.ExpGolomb(units[1].data);
+		// var config = expGolombDecoder.readSPS();
+		// console.log("config:", config)
 
 		return
+	}
+
+	function writeQueueToFIle(_data,_path) {
+		var fs = require("fs");
+		var path = "full_file_test.264";
+		// var data;
+		// for (u= 0; u < queue.length; u++) {
+		// 	data += queue[u];	
+		// 	console.log(`${u}\n\n\n`,queue[u])		
+		// }
+
+		fs.writeFile(_path, _data, function(error) {
+		     if (error) {
+		       console.error("write error:  " + error.message);
+		     } else {
+		       console.log("Successful Write to ");
+		     }
+		});
 	}
 
 
@@ -58,6 +82,8 @@ FillQueue();
             	 if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
 	                  //var arrayBuffer = anHttpRequest.response; 
 	                  var arrayBuffer = str2ab(anHttpRequest.responseText); 
+	                   counter++
+	                   writeQueueToFIle(anHttpRequest.responseText, "output/_"+counter);
 	                  if (arrayBuffer) {
 	                    var byteArray = new Uint8Array(arrayBuffer);
 	                    aCallback(byteArray);
