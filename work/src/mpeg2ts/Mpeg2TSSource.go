@@ -205,9 +205,10 @@ func CheckIfIFrame(buffer []byte, offset int, length int) bool {
 }
 
 func FrameQueueDispatcherFullFile(videoFrames frameQueue) {
-	fmt.Println("entered FrameQueueDispatcher")
+	fmt.Println("entered  FULL FILE FrameQueueDispatcher")
 	h264Buffer := make([]byte, 60*1024*1024)
 	var length int = 0
+	var counter = 0
 	var iframeDetected bool = false
 	for {
 		//fmt.Println("entered consmer loop")
@@ -231,15 +232,23 @@ func FrameQueueDispatcherFullFile(videoFrames frameQueue) {
 				continue
 			}
 		}
+
+		//we have alot 0 sized p_frames...dunno why, but lets skip this for now:
+		if (frame.Size() == 0) {
+			videoFrames.Recylce(frame)
+			continue
+		}
+		counter++
+		fmt.Println("counter: ",counter)
 		ArrayCopy(frame.GetData(),0, h264Buffer,length,frame.Size())
 		length += frame.Size()
 		videoFrames.Recylce(frame)
-		if (length >= 22500000){
+		if (counter >= 500){
 			break;
 		}
 	}
 	fmt.Println("left FrameQueueDispatcher loop.")
-	WriteFile(h264Buffer[:22500000],"tempfile1.264");
+	WriteFile(h264Buffer[:length],"../../full.264");
 }
 
 
@@ -289,10 +298,10 @@ func FrameQueueDispatcher(videoFrames frameQueue) {
 		if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
 			i_counter++
 			p_counter = 0
-			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>____size_%d-----", counter,i_counter,p_counter,i_type,frame.Size())
+			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE(%c)____size_%d-----", counter,i_counter,p_counter,i_type,frame.Size())
 		} else {
 			p_counter++;
-			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE<%c>____size_%d", counter,i_counter,p_counter,p_type,frame.Size())
+			s = fmt.Sprintf("../../tmp/frame[%d]-I[%d]-P[%d]_TYPE(%c)____size_%d", counter,i_counter,p_counter,p_type,frame.Size())
 		}
 
 		fmt.Println("file: ",counter)

@@ -59,7 +59,7 @@ func RunServer () {
 }
 
 
-//Used to force main thread to go to sleep so we can handle when program stops running.
+// // Used to force main thread to go to sleep so we can handle when program stops running.
 //var Done = make(chan bool)
 //func main() {
 //	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
@@ -67,7 +67,7 @@ func RunServer () {
 //	var uSource UdpSource = *NewUdpSource(100, videoFrames)
 //	fmt.Println("working on UDP");
 //	go uSource.FrameQueueFiller()
-//	go FrameQueueDispatcher(videoFrames)
+//	go FrameQueueDispatcherFullFile(videoFrames)
 //	<-Done
 //}
 

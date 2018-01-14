@@ -28,15 +28,22 @@ FillQueue();
 	}
 
 	function ProcessQueue() {
-		var units = Flow.demuxerTS._parseAVCNALu(queue[0])
+		// for (u= 0; u < queue.length; u++) {
+		// 	var units = Flow.demuxerTS._parseAVCNALu(queue[u])
+		// 	//console.log("units: ",units)
+		// 	for (var i =0; i <units.length; i++) {
+		// 		//console.log("type:", units[i].type)
+		// 		if( units[i].type === 7) {
+		// 			expGolombDecoder = new Flow.ExpGolomb(units[i].data);
+		// 			var config = expGolombDecoder.readSPS();
+		// 			console.log("config:", config)
+		// 		}
+		// 	}			
+		// }
+
+		var units = Flow.demuxerTS._parseAVCNALu(queue[1])
 		console.log("units: ",units)
 
-		for (var i =3; i <units.length; i++) {
-			console.log("type:", units[i].type)
-			expGolombDecoder = new Flow.ExpGolomb(units[i].data);
-			var config = expGolombDecoder.readSPS();
-			console.log("config:", config)
-		}
 		return
 	}
 
