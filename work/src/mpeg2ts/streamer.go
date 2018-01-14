@@ -33,10 +33,14 @@ func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName st
 
 func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	body  := <-Queue
-	WriteFile(body,fmt.Sprint("../../../test/output2/_",counter))
+	//WriteFile(body,fmt.Sprint("../../../test/output2/_",counter))
 	counter++
+	fmt.Println(body)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Set("Content-Type", "text/x-c")
 	w.Write(body)
-	w.Header().Set("Content-Type", "video/MP2T")
 }
 
 func streamHandlerFile(response http.ResponseWriter, request *http.Request) {
@@ -92,10 +96,6 @@ func RunServerQueue () {
 //	<-Done
 //}
 
-//func main() {
-//	RunServer2()
-//}
-
 
 
 func main() {
@@ -104,17 +104,16 @@ func main() {
 	fmt.Println("working on UDP");
 	go uSource.FrameQueueFiller()
 	go FinalQueueFilller(videoFrames)
-	go RunServerQueue()
+	go RunServerFiles()
 	<-Done
 }
 
 // https://stackoverflow.com/questions/22452804/angularjs-http-get-request-failed-with-custom-header-alllowed-in-cors
 func RunServerFiles() {
 	r := mux.NewRouter()
-	r.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandlerFile)
+	r.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandlerQueue)
 	http.Handle("/", &MyServer{r})
 	http.ListenAndServe(":8000", nil);
-
 }
 
 type MyServer struct {
