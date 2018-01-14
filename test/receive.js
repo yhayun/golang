@@ -6,7 +6,7 @@ var baseUrl = "http://localhost:8000/media/stream/test/1";
 var binaryClient = new BinaryHttpClient();
 var queue  = [];
 var initFlag = false
-var counter = 0
+var counter = 1
 //Run Queue Filler:
 FillQueue();
 /**
@@ -82,8 +82,8 @@ FillQueue();
             	 if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
 	                  //var arrayBuffer = anHttpRequest.response; 
 	                  var arrayBuffer = str2ab(anHttpRequest.responseText); 
+	                   writeQueueToFIle(arrayBuffer, "output/_"+counter);
 	                   counter++
-	                   writeQueueToFIle(anHttpRequest.responseText, "output/_"+counter);
 	                  if (arrayBuffer) {
 	                    var byteArray = new Uint8Array(arrayBuffer);
 	                    aCallback(byteArray);

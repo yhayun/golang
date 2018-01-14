@@ -6,9 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"strconv"
 	"fmt"
+	"time"
 )
 
-
+var Done = make(chan bool)
+var Queue = make(chan []byte, 500)
 var counter int = 1
 
 func getMediaBase(mId int) string{
@@ -17,21 +19,27 @@ func getMediaBase(mId int) string{
 }
 
 
-func serveHlsTls( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
+func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	//mediaFile := fmt.Sprint("%s/hls/%s",mediabase,segName)
 	//http.ServeFile(w,r,mediaFile)
-
 	//testing"
 	name := fmt.Sprint("../../media/",counter)
 	counter++
-
 	http.ServeFile(w,r,name)
 	fmt.Println("%s",name)
 	//w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "video/MP2T")
 }
 
-func streamHandler(response http.ResponseWriter, request *http.Request) {
+func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
+	body  := <-Queue
+	WriteFile(body,fmt.Sprint("../../../test/output2/_",counter))
+	counter++
+	w.Write(body)
+	w.Header().Set("Content-Type", "video/MP2T")
+}
+
+func streamHandlerFile(response http.ResponseWriter, request *http.Request) {
 	fmt.Println("streamHandler")
 	vars := mux.Vars(request)
 	mId, err := strconv.Atoi(vars["mId"])
@@ -41,26 +49,39 @@ func streamHandler(response http.ResponseWriter, request *http.Request) {
 	}
 	segName, _ := vars["segName"]
 	mediaBase := getMediaBase(mId)
-	serveHlsTls(response, request, mediaBase, segName)
+	serveHlsFile(response, request, mediaBase, segName)
+}
+
+func streamHandlerQueue(response http.ResponseWriter, request *http.Request) {
+	fmt.Println("streamHandler")
+	vars := mux.Vars(request)
+	mId, err := strconv.Atoi(vars["mId"])
+	if err != nil {
+		response.WriteHeader(http.StatusNotFound)
+		return
+	}
+	segName, _ := vars["segName"]
+	mediaBase := getMediaBase(mId)
+	serveHlsQueue(response, request, mediaBase, segName)
 }
 
 
 func Handlers() *mux.Router {
 	router :=  mux.NewRouter()
-	router.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandler).Methods("GET")
+	router.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandlerQueue).Methods("GET")
 	return router
 }
 
 
-func RunServer () {
-	fmt.Println("started")
+func RunServerQueue () {
+	fmt.Println("Entered Server")
 	http.Handle("/",Handlers())
 	http.ListenAndServe(":8000",nil)
 }
 
 
 // // Used to force main thread to go to sleep so we can handle when program stops running.
-//var Done = make(chan bool)
+
 //func main() {
 //	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
 //	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
@@ -71,16 +92,26 @@ func RunServer () {
 //	<-Done
 //}
 
+//func main() {
+//	RunServer2()
+//}
+
+
+
 func main() {
-	RunServer2()
+	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
+	var uSource UdpSource = *NewUdpSource(100, videoFrames)
+	fmt.Println("working on UDP");
+	go uSource.FrameQueueFiller()
+	go FinalQueueFilller(videoFrames)
+	go RunServerQueue()
+	<-Done
 }
 
-
-
 // https://stackoverflow.com/questions/22452804/angularjs-http-get-request-failed-with-custom-header-alllowed-in-cors
-func RunServer2() {
+func RunServerFiles() {
 	r := mux.NewRouter()
-	r.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandler)
+	r.HandleFunc("/media/stream/{segName:test}/{mId:[0-9]+}", streamHandlerFile)
 	http.Handle("/", &MyServer{r})
 	http.ListenAndServe(":8000", nil);
 
@@ -103,4 +134,47 @@ func (s *MyServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	// Lets Gorilla work
 	s.r.ServeHTTP(rw, req)
+}
+
+
+
+
+func FinalQueueFilller(videoFrames frameQueue ) {
+	fmt.Println("entered  FinalQueueFilller")
+	var length int = 0
+	var counter = 0
+	var iframeDetected bool = false
+	for {
+		if videoFrames.IsEmpty() {
+			fmt.Println("consume sleep 100ms")
+			time.Sleep(100 * time.Millisecond)
+			if videoFrames.IsEmpty() {
+				fmt.Println("consume sleep 8000ms")
+				time.Sleep(8000 * time.Millisecond)
+				if videoFrames.IsEmpty() {
+					break
+				}
+			}
+		}
+		var frame *Frame  = videoFrames.Poll();
+		if !iframeDetected {
+			if CheckIfIFrame(frame.GetData(),0, frame.Size()) {
+				iframeDetected = true
+			} else {
+				videoFrames.Recylce(frame)
+				continue
+			}
+		}
+		if (frame.Size() == 0) {
+			videoFrames.Recylce(frame)
+			continue
+		}
+
+		counter++
+		fmt.Println("counter: ",counter)
+		actualData := frame.GetData()[:frame.Size()]
+		length += frame.Size()
+		Queue <- actualData
+		videoFrames.Recylce(frame)
+	}
 }

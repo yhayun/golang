@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 const UDP_SIZE = 1500
-const FRAME_SIZE = 1000000; // 1MB
+const FRAME_SIZE = 300000; // 300KB
 const MPEG2TS_PACKET_LENGTH = 188
 const MAX_UDP_PACKET_SIZE = 1500;
 
