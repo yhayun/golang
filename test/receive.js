@@ -75,15 +75,16 @@ FillQueue();
     function BinaryHttpClient() {
         this.get = function(aUrl, aCallback) {
             var anHttpRequest = new XMLHttpRequest();
-            anHttpRequest.open( "GET", aUrl, true );            
-            anHttpRequest.responseType = "arraybuffer";
+            anHttpRequest.overrideMimeType('text/plain; charset=iso-8859-1')   
+            anHttpRequest.open( "GET", aUrl, true );      
             
             anHttpRequest.onload = function (oEvent) {
             	 if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-	                  //var arrayBuffer = anHttpRequest.response; 
-	                  var arrayBuffer = str2ab(anHttpRequest.responseText); 
-	                   writeQueueToFIle(arrayBuffer, "output/_"+counter);
-	                   counter++
+	                   //var a = anHttpRequest.response; 
+	                   var arrayBuffer = str2ab(anHttpRequest.responseText); 
+	                   console.log(arrayBuffer)
+	                   return
+
 	                  if (arrayBuffer) {
 	                    var byteArray = new Uint8Array(arrayBuffer);
 	                    aCallback(byteArray);
@@ -132,7 +133,8 @@ function str2ab(str) {
   var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
   var bufView = new Uint8Array(buf);
   for (var i=0, strLen=str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
+    bufView[i] = str.charCodeAt(i) & 0xff;
+    console.log(bufView[i]," ",str.charCodeAt(i) & 0xff)
   }
   return buf;
 }
