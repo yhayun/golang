@@ -2810,7 +2810,7 @@ class TSDemuxer {
   var queue           = [];
   var videoSource       = null;
   var sessionId         = null;
-  var baseUrl         = "http://127.0.0.1:8080/StreamingRest/Rest?";
+var baseUrl = "http://localhost:8000/media/stream/test/1";
   var videoElement      = document.getElementById("myVideo");
   var initFlag        = false;
   var initialization    = null;
@@ -2939,31 +2939,31 @@ console.log("after init");
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
-var baseUrl = "http://localhost:8000/media/stream/test/1";
-var binaryClient = new BinaryHttpClient();
-var queue  = [];
-var initFlag = false
-var counter = 1
-//Run Queue Filler:
-FillQueue();
+// var baseUrl = "http://localhost:8000/media/stream/test/1";
+// var binaryClient = new BinaryHttpClient();
+// var queue  = [];
+// var initFlag = false
+// var counter = 1
+// //Run Queue Filler:
+// FillQueue();
 /**
  *  Calling order: FillQueue() -> (retriveData() <-> handleLoop()). in handle loop once we have enough frames
  *  we can start handling the data.
  */
 
-  function  FillQueue() {
-        var xmlhttp = new XMLHttpRequest();
-        retrieveData()
+  // function  FillQueue() {
+  //       var xmlhttp = new XMLHttpRequest();
+  //       retrieveData()
         
-  };
+  // };
 
-  function handleLoop() {
-    if (queue.length == 100) {
-      console.log("Queue ready:")
-      return ProcessQueue();
-    }
-    retrieveData()
-  }
+  // function handleLoop() {
+  //   if (queue.length == 100) {
+  //     console.log("Queue ready:")
+  //     return ProcessQueue();
+  //   }
+  //   retrieveData()
+  // }
 
   // function retrieveData() {
   //     var byteArray = null;
@@ -3061,7 +3061,7 @@ FillQueue();
                 }
               }
           };       
-          anHttpRequest.send( null );
+//           anHttpRequest.send( null );
       }
   }
 
@@ -3086,6 +3086,7 @@ FillQueue();
 
   function initVideoConteiner(){
     console.log('Video conteiner init ...')
+
 
     videoElement = document.createElement("video");
     videoElement.id = 'myVideo';
@@ -3150,7 +3151,8 @@ FillQueue();
   function addBufferFromQueue() {
     
     if (queue.length > 0 && !videoSource.updating) {   
-    var bufFromQueue new Int8Array(queue.shift())   // john this is where you parse the buff to json
+    // var bufFromQueue = new Int8Array(queue.shift())   // john this is where you parse the buff to json
+    var bufFromQueue = {data : new Int8Array(queue.shift())}   // temp! remove this when john is done parsing the json
     var videoTrack = {}
       videoTrack.inputTimeScale = 90000
         var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
@@ -3167,11 +3169,14 @@ FillQueue();
      }     
       var sample = {};
       sample.units = units;
-      sample.pts = u.pts
-      sample.dts = u.dts
+      // sample.pts = u.pts // temp! restore this when john is done parsing the json
+      // sample.dts = u.dts // temp! resotre this when john is done parsing the json
+      sample.pts = counter // temp! REMOVE this when john is done parsing the json
+      sample.dts = counter // temp! REMOVE this when john is done parsing the json
       videoTrack.samples = [sample]
-      mp4frag = remuxVideo(videoTrack, sample.pts, 0, 0, 0);
-
+      // mp4frag = remuxVideo(videoTrack, sample.pts, 0, 0, 0);// temp! resotre this when john is done parsing the json
+      mp4frag = remuxVideo(videoTrack, counter, 0, 0, 0);
+      counter = counter + 20
       // continue remuxing , create mp4frag
       // videoSource.appendBuffer(new Int8Array(queue.shift()));
       videoSource.appendBuffer(new Int8Array(mp4frag));
