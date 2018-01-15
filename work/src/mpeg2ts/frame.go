@@ -2,6 +2,7 @@ package main
 
 type Frame struct {
 	pts long
+	dts long
 	offset int
 	data []byte
 }
@@ -75,6 +76,21 @@ func ( f *Frame) Clear() {
  	f.pts = pts
  }
 
+/**
+* @return The PTS of the Frame.
+*/
+func (f *Frame) GetDTS () long {
+	return f.dts
+}
+
+
+/**
+ * @param pts
+ *            The PTS of the Frame.
+ */
+func (f *Frame) SetDTS(dts long) {
+	f.dts = dts
+}
 
 
 /**

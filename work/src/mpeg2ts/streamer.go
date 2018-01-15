@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"fmt"
 	"time"
+	"encoding/binary"
 )
 
 var Done = make(chan bool)
@@ -22,12 +23,11 @@ func getMediaBase(mId int) string{
 func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	//mediaFile := fmt.Sprint("%s/hls/%s",mediabase,segName)
 	//http.ServeFile(w,r,mediaFile)
-	//testing"
 	name := fmt.Sprint("../../media/",counter)
 	counter++
 	http.ServeFile(w,r,name)
 	fmt.Println("%s",name)
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "video/MP2T")
 }
 
@@ -83,7 +83,6 @@ func RunServerQueue () {
 
 
 // // Used to force main thread to go to sleep so we can handle when program stops running.
-
 //func main() {
 //	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
 //	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
@@ -93,7 +92,6 @@ func RunServerQueue () {
 //	go FrameQueueDispatcherFullFile(videoFrames)
 //	<-Done
 //}
-
 
 
 func main() {
@@ -168,10 +166,21 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 		}
 
 		counter++
-		fmt.Println("counter: ",counter)
+		fmt.Println("counter: ",counter,"  pts:", int64TObytes((int64)(frame.GetPTS())),"  pts-64:",frame.GetPTS())
 		actualData := frame.GetData()[:frame.Size()]
+		actualData = append(actualData, int64TObytes((int64)(frame.GetPTS()))...)
+		actualData = append(actualData, int64TObytes((int64)(frame.GetDTS()))...)
+		//fmt.Println(actualData)
 		length += frame.Size()
-		Queue <- actualData
+		Queue <- actualData  // data, PTS(4bytes), DTS(4bytes)
 		videoFrames.Recylce(frame)
 	}
+}
+
+func int64TObytes(num int64) []byte {
+	buf := make([]byte, binary.MaxVarintLen64)
+	binary.PutVarint(buf, num)//n := binary.PutVarint(buf, num)
+	b := buf[:4]// always chop the first 4.
+
+	return b;
 }

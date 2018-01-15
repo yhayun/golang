@@ -27,6 +27,7 @@ type Mpeg2TSPacket struct {
 	//// in case of PES
 	startOfPES bool
 	pts long
+	dts long
 	payloadExist bool
 	payloadOffset int
 	payloadLength int
@@ -99,6 +100,7 @@ func (tsP* Mpeg2TSPacket) FromBytes(data []byte, offset int, programPID int) {
 		}
 		if (tsP.startOfPES) {
 			tsP.pts = GetPTS(data, offset);
+			tsP.dts = GetDTS(data, offset);
 		}
 	}
 }
@@ -243,16 +245,29 @@ func GetPTS(buffer []byte, offset int) long {
 
 	var pts long;
 
-	pts = ((long) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30;
-	pts += ((long) (buffer[1 + ptsOffset] & 0xff) << 22);
-	pts += ((long) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15;
-	pts += ((long) (buffer[3 + ptsOffset] & 0xff) << 7);
-	pts += (long)((buffer[4 + ptsOffset] & 0xfe) >> 1);
+	pts = ((long) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30
+	pts += ((long) (buffer[1 + ptsOffset] & 0xff) << 22)
+	pts += ((long) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15
+	pts += ((long) (buffer[3 + ptsOffset] & 0xff) << 7)
+	pts += (long)((buffer[4 + ptsOffset] & 0xfe) >> 1)
 	return pts;
 }
 
+func GetDTS(buffer []byte, offset int) long {
+	var tsDataOffset int = TsDataOffset(buffer, offset)+14;
+	var dts long= (long)((buffer[tsDataOffset] & 0x0e) >> 1)
+ 	dts = (dts << 15) +(long)((buffer[1 + tsDataOffset] & 0xff) << 7) + (long)((buffer[2+ tsDataOffset] & 0xfe) >> 1)
+ 	dts = (dts << 15) + (long)((buffer[3 + tsDataOffset] & 0xff) << 7) + (long)((buffer[4+ tsDataOffset] & 0xfe) >> 1)
+
+ 	return dts
+ }
+
 func (tsP* Mpeg2TSPacket) GetPTS() long {
 	return tsP.pts
+}
+
+func (tsP* Mpeg2TSPacket) GetDTS() long {
+	return tsP.dts
 }
 
 func (tsP* Mpeg2TSPacket) GetH264type() int16 {

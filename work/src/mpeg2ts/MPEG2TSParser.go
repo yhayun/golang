@@ -100,6 +100,7 @@ type Mpeg2TSParser struct {
 			 }
 		 }
 		 ps.currentFrame.SetPTS(packet.GetPTS()/90)
+		 ps.currentFrame.SetDTS(packet.GetDTS()/90)
 
 	 } else if (ps.currentFrame.IsEmpty() || packetCounter != ps.counter) {
 		 //fmt.Println("Continuity = ", packetCounter," counter = ", ps.counter);
