@@ -2805,7 +2805,7 @@ FillQueue();
  *  we can start handling the data.
  */
 
-    function  FillQueue() {
+  function  FillQueue() {
         var xmlhttp = new XMLHttpRequest();
         retrieveData()
         
@@ -2819,26 +2819,27 @@ FillQueue();
     retrieveData()
   }
 
-    function retrieveData() {
-        var byteArray = null;
-        binaryClient.get(baseUrl, function(byteArray) {
-            if (byteArray.byteLength == 0) {
-                console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
-                return;
-            }
-            if(initFlag == false) {
-                console.log('Got data first time: ' + byteArray.byteLength);   
-                initFlag = true;                     
-                queue.push(byteArray); 
-                handleLoop()
-                return;
-            }
-            console.log('Got data: ' + byteArray.byteLength);
-            queue.push(byteArray);
-            console.log('queue.length: ' + queue.length);
-            handleLoop()
-        });     
-    }
+  function retrieveData() {
+      var byteArray = null;
+      binaryClient.get(baseUrl, function(byteArray) {
+          if (byteArray.byteLength == 0) {
+              console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
+              return;
+          }
+          if(initFlag == false) {
+              console.log('Got data first time: ' + byteArray.byteLength);   
+              initFlag = true;                     
+              queue.push(byteArray); 
+              handleLoop()
+              return;
+          }
+          console.log('Got data: ' + byteArray.byteLength);
+          queue.push(byteArray);
+          console.log('queue.length: ' + queue.length);
+          handleLoop()
+      });     
+  }
+
   function ProcessQueue() {
     for (u= 0; u < queue.length; u++) {
       var videoTrack = {}
@@ -2860,55 +2861,40 @@ FillQueue();
       sample.units = units;
       sample.pts = u.pts
       sample.dts = u.dts
-      
       videoTrack.samples = [sample]
-      
-        
-
-
-
     }
-
-
-
     // var units = demuxerTS._parseAVCNALu(queue[0])
     // console.log("units: ",units)
     // expGolombDecoder = new ExpGolomb(units[1].data);
     // var config = expGolombDecoder.readSPS();
     // console.log("config:", config)
-
     return
   }
 
 
-
-    function BinaryHttpClient() {
-        this.get = function(aUrl, aCallback) {
-            var anHttpRequest = new XMLHttpRequest();
-            anHttpRequest.overrideMimeType('text\/plain; charset=x-user-defined');
-            anHttpRequest.open( "GET", aUrl, true );      
-            
-            anHttpRequest.onload = function (oEvent) {
-               if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                    var arrayBuffer = stringToArrayBuffer(anHttpRequest.responseText); 
-                    if (arrayBuffer) {
-                      var byteArray = new Uint8Array(arrayBuffer);
-                      aCallback(byteArray);
-                    }
-                } else {
-                  console.log("Request failed with status:",anHttpRequest.status)
-                  if (queue.length != 0) {
-                    ProcessQueue();
+  function BinaryHttpClient() {
+      this.get = function(aUrl, aCallback) {
+          var anHttpRequest = new XMLHttpRequest();
+          anHttpRequest.overrideMimeType('text\/plain; charset=x-user-defined');
+          anHttpRequest.open( "GET", aUrl, true );      
+          
+          anHttpRequest.onload = function (oEvent) {
+             if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
+                  var arrayBuffer = stringToArrayBuffer(anHttpRequest.responseText); 
+                  if (arrayBuffer) {
+                    var byteArray = new Uint8Array(arrayBuffer);
+                    aCallback(byteArray);
                   }
+              } else {
+                console.log("Request failed with status:",anHttpRequest.status)
+                if (queue.length != 0) {
+                  ProcessQueue();
                 }
-            };       
-            anHttpRequest.send( null );
-        }
-    }
-
-
-
-
+              }
+          };       
+          anHttpRequest.send( null );
+      }
+  }
 
 
 // our server sends the file as texts, we need to convert it to bytearray for this to work
@@ -2928,8 +2914,6 @@ FillQueue();
 function stringToArrayBuffer(str) {
   return (new Uint8Array([].map.call(str,function(x){return x.charCodeAt(0)}))).buffer;
 }
-
-
     </script>
 </body>
 </html>
