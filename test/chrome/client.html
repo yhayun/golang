@@ -2771,9 +2771,9 @@ class _observer {
   } 
 }
 
-var navigator = {
-  userAgent :"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
-}
+// var navigator = {
+//   userAgent :"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
+// }
 var _typeSupported = {
   mpeg: true,
 }
@@ -2819,19 +2819,57 @@ FillQueue();
     retrieveData()
   }
 
+    function retrieveData() {
+        var byteArray = null;
+        binaryClient.get(baseUrl, function(byteArray) {
+            if (byteArray.byteLength == 0) {
+                console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
+                return;
+            }
+            if(initFlag == false) {
+                console.log('Got data first time: ' + byteArray.byteLength);   
+                initFlag = true;                     
+                queue.push(byteArray); 
+                handleLoop()
+                return;
+            }
+            console.log('Got data: ' + byteArray.byteLength);
+            queue.push(byteArray);
+            console.log('queue.length: ' + queue.length);
+            handleLoop()
+        });     
+    }
   function ProcessQueue() {
     for (u= 0; u < queue.length; u++) {
-     var units = demuxerTS._parseAVCNALu(queue[u])
+      var videoTrack = {}
+      videoTrack.inputTimeScale = 90000
+
+      var units = demuxerTS._parseAVCNALu(queue[u.data])
      //console.log("units: ",units)
      for (var i =0; i <units.length; i++) {
        //console.log("type:", units[i].type)
        if( units[i].type === 7) {
          expGolombDecoder = new ExpGolomb(units[i].data);
          var config = expGolombDecoder.readSPS();
+         videoTrack.width = config.width;
+         videoTrack.height = config.height;
          console.log("config:", config)
        }
      }     
+      var sample = {};
+      sample.units = units;
+      sample.pts = u.pts
+      sample.dts = u.dts
+      
+      videoTrack.samples = [sample]
+      
+        
+
+
+
     }
+
+
 
     // var units = demuxerTS._parseAVCNALu(queue[0])
     // console.log("units: ",units)
@@ -2870,26 +2908,7 @@ FillQueue();
 
 
 
-    function retrieveData() {
-        var byteArray = null;
-        binaryClient.get(baseUrl, function(byteArray) {
-            if (byteArray.byteLength == 0) {
-                console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
-                return;
-            }
-            if(initFlag == false) {
-                console.log('Got data first time: ' + byteArray.byteLength);   
-                initFlag = true;                     
-                queue.push(byteArray); 
-                handleLoop()
-                return;
-            }
-            console.log('Got data: ' + byteArray.byteLength);
-            queue.push(byteArray);
-            console.log('queue.length: ' + queue.length);
-            handleLoop()
-        });     
-    }
+
 
 
 // our server sends the file as texts, we need to convert it to bytearray for this to work
