@@ -33,9 +33,7 @@ func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName st
 
 func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	body  := <-Queue
-	//WriteFile(body,fmt.Sprint("../../../test/output2/_",counter))
-	counter++
-	fmt.Println(body)
+	//fmt.Println(body)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

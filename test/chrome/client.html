@@ -2812,7 +2812,7 @@ FillQueue();
   };
 
   function handleLoop() {
-    if (queue.length == 500) {
+    if (queue.length == 100) {
       console.log("Queue ready:")
       return ProcessQueue();
     }
@@ -2820,24 +2820,24 @@ FillQueue();
   }
 
   function ProcessQueue() {
-    // for (u= 0; u < queue.length; u++) {
-    //  var units = Flow.demuxerTS._parseAVCNALu(queue[u])
-    //  //console.log("units: ",units)
-    //  for (var i =0; i <units.length; i++) {
-    //    //console.log("type:", units[i].type)
-    //    if( units[i].type === 7) {
-    //      expGolombDecoder = new Flow.ExpGolomb(units[i].data);
-    //      var config = expGolombDecoder.readSPS();
-    //      console.log("config:", config)
-    //    }
-    //  }     
-    // }
+    for (u= 0; u < queue.length; u++) {
+     var units = demuxerTS._parseAVCNALu(queue[u])
+     //console.log("units: ",units)
+     for (var i =0; i <units.length; i++) {
+       //console.log("type:", units[i].type)
+       if( units[i].type === 7) {
+         expGolombDecoder = new ExpGolomb(units[i].data);
+         var config = expGolombDecoder.readSPS();
+         console.log("config:", config)
+       }
+     }     
+    }
 
-    var units = Flow.demuxerTS._parseAVCNALu(queue[0])
-    console.log("units: ",units)
-    expGolombDecoder = new Flow.ExpGolomb(units[1].data);
-    var config = expGolombDecoder.readSPS();
-    console.log("config:", config)
+    // var units = demuxerTS._parseAVCNALu(queue[0])
+    // console.log("units: ",units)
+    // expGolombDecoder = new ExpGolomb(units[1].data);
+    // var config = expGolombDecoder.readSPS();
+    // console.log("config:", config)
 
     return
   }
@@ -2847,15 +2847,12 @@ FillQueue();
     function BinaryHttpClient() {
         this.get = function(aUrl, aCallback) {
             var anHttpRequest = new XMLHttpRequest();
-            anHttpRequest.overrideMimeType('text/plain; charset=iso-8859-1')   
+            anHttpRequest.overrideMimeType('text\/plain; charset=x-user-defined');
             anHttpRequest.open( "GET", aUrl, true );      
             
             anHttpRequest.onload = function (oEvent) {
                if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                     var arrayBuffer = str2ab(anHttpRequest.responseText); 
-                     console.log(arrayBuffer)
-                     return
-
+                    var arrayBuffer = stringToArrayBuffer(anHttpRequest.responseText); 
                     if (arrayBuffer) {
                       var byteArray = new Uint8Array(arrayBuffer);
                       aCallback(byteArray);
@@ -2897,17 +2894,20 @@ FillQueue();
 
 // our server sends the file as texts, we need to convert it to bytearray for this to work
 // https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
-function ab2str(buf) {
-  return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-function str2ab(str) {
-  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-  var bufView = new Uint8Array(buf);
-  for (var i=0, strLen=str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i) & 0xff;
-    console.log(bufView[i]," ",str.charCodeAt(i) & 0xff)
-  }
-  return buf;
+// function ab2str(buf) {
+//   return String.fromCharCode.apply(null, new Uint16Array(buf));
+// }
+// function str2ab(str) {
+//   var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+//   var bufView = new Uint16Array(buf);
+//   for (var i=0, strLen=str.length; i < strLen; i++) {
+//     bufView[i] = str.charCodeAt(i);
+//   }
+//   return buf;
+// }
+
+function stringToArrayBuffer(str) {
+  return (new Uint8Array([].map.call(str,function(x){return x.charCodeAt(0)}))).buffer;
 }
 
 
