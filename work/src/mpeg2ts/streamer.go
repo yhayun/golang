@@ -168,7 +168,7 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 		}
 
 		counter++
-		fmt.Println("counter: ",counter,"  pts:", uint32TObytes((frame.GetPTS())),"  pts-64:",frame.GetPTS())
+		fmt.Println("counter: ",counter,"  dts:",frame.GetDTS() ,"  pts:",frame.GetPTS())
 		actualData := frame.GetData()[:frame.Size()]
 		actualData = append(actualData, uint32TObytes((frame.GetPTS()))...)
 		actualData = append(actualData, uint32TObytes((frame.GetDTS()))...)
