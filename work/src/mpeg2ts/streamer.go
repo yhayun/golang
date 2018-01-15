@@ -31,13 +31,15 @@ func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName st
 	w.Header().Set("Content-Type", "video/MP2T")
 }
 
+
 func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	body  := <-Queue
 	//fmt.Println(body)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	w.Header().Set("Content-Type", "text/x-c")
+	w.Header().Set("Content-Type", "application/json; charset=x-user-defined")
+
 	w.Write(body)
 }
 
@@ -166,10 +168,10 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 		}
 
 		counter++
-		fmt.Println("counter: ",counter,"  pts:", int64TObytes((int64)(frame.GetPTS())),"  pts-64:",frame.GetPTS())
+		fmt.Println("counter: ",counter,"  pts:", uint32TObytes((frame.GetPTS())),"  pts-64:",frame.GetPTS())
 		actualData := frame.GetData()[:frame.Size()]
-		actualData = append(actualData, int64TObytes((int64)(frame.GetPTS()))...)
-		actualData = append(actualData, int64TObytes((int64)(frame.GetDTS()))...)
+		actualData = append(actualData, uint32TObytes((frame.GetPTS()))...)
+		actualData = append(actualData, uint32TObytes((frame.GetDTS()))...)
 		//fmt.Println(actualData)
 		length += frame.Size()
 		Queue <- actualData  // data, PTS(4bytes), DTS(4bytes)
@@ -177,10 +179,8 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 	}
 }
 
-func int64TObytes(num int64) []byte {
-	buf := make([]byte, binary.MaxVarintLen64)
-	binary.PutVarint(buf, num)//n := binary.PutVarint(buf, num)
-	b := buf[:4]// always chop the first 4.
-
-	return b;
+func uint32TObytes(num uint32) []byte {
+	bs := make([]byte, 4)
+	binary.LittleEndian.PutUint32(bs, num)
+	return bs;
 }
