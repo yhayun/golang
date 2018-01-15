@@ -3150,10 +3150,10 @@ FillQueue();
   function addBufferFromQueue() {
     
     if (queue.length > 0 && !videoSource.updating) {   
-    var bufFromQueue new Int8Array(queue.shift())   
+    var bufFromQueue new Int8Array(queue.shift())   // john this is where you parse the buff to json
     var videoTrack = {}
       videoTrack.inputTimeScale = 90000
-        var units = demuxerTS._parseAVCNALu(queue[u.data])
+        var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
      //console.log("units: ",units)
      for (var i =0; i <units.length; i++) {
        //console.log("type:", units[i].type)
@@ -3170,10 +3170,11 @@ FillQueue();
       sample.pts = u.pts
       sample.dts = u.dts
       videoTrack.samples = [sample]
-      
+      mp4frag = remuxVideo(videoTrack, sample.pts, 0, 0, 0);
+
       // continue remuxing , create mp4frag
       // videoSource.appendBuffer(new Int8Array(queue.shift()));
-      videoSource.appendBuffer(mp4frag);
+      videoSource.appendBuffer(new Int8Array(mp4frag));
       i++;
       if(i == clientQueueSize) {
         videoElement.play();          
