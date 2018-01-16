@@ -485,6 +485,7 @@ class MP4 {
     len = i,
     result;
 //     throw error()
+    console.trace()
     console.log('payload',payload)
     // calculate the total size we need to allocate
     while (i--) {
@@ -3179,7 +3180,6 @@ var staticPps
        }
        if (units[i].type === 8) {
           staticPps = [units[i].data];
-          videoTrack.pps = [units[i].data];
           console.log('pps')
        }
      }     
@@ -3209,16 +3209,18 @@ videoTrack.height = staticHeight
       videoTrack.samples = [sample]
       // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
       console.log(videoTrack)
-      mp4frag = remuxer.remux(demuxerTS._audioTrack,videoTrack,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
-      console.log(mp4frag)
-      counter = counter + 20
-      // continue remuxing , create mp4frag
-      // videoSource.appendBuffer(new Int8Array(queue.shift()));
-      videoSource.appendBuffer(new Int8Array(mp4frag));
-      i++;
-      if(i == clientQueueSize) {
-        videoElement.play();          
-        timingCheckIntervalID = setInterval(timingCheck, 1000);
+      if ((staticSps && staticPps && staticHeight && staticWidth)) {  
+        mp4frag = remuxer.remux(demuxerTS._audioTrack,videoTrack,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
+        console.log(mp4frag)
+        counter = counter + 20
+        // continue remuxing , create mp4frag
+        // videoSource.appendBuffer(new Int8Array(queue.shift()));
+        videoSource.appendBuffer(new Int8Array(mp4frag));
+        i++;
+        if(i == clientQueueSize) {
+          videoElement.play();          
+          timingCheckIntervalID = setInterval(timingCheck, 1000);
+        }
       }
     }
   }
