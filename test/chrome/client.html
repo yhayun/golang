@@ -484,6 +484,8 @@ class MP4 {
     i = payload.length,
     len = i,
     result;
+//     throw error()
+    console.log('payload',payload)
     // calculate the total size we need to allocate
     while (i--) {
       size += payload[i].byteLength;
@@ -538,6 +540,7 @@ class MP4 {
   }
 
   static mdia(track) {
+    console.log('track in mp4box', track)
     return MP4.box(MP4.types.mdia, MP4.mdhd(track.timescale, track.duration), MP4.hdlr(track.type), MP4.minf(track));
   }
 
@@ -1007,14 +1010,20 @@ class MP4Remuxer {
   remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) {
     // generate Init Segment if needed
     if (!this.ISGenerated) {
+      console.log('test1')
+      console.log(videoTrack)
       this.generateIS(audioTrack,videoTrack,timeOffset);
+      console.log('test2')
     }
-
+    console.log('test3')
     if (this.ISGenerated) {
+      console.log('test4')
       const nbAudioSamples = audioTrack.samples.length;
       const nbVideoSamples = videoTrack.samples.length;
       let audioTimeOffset = timeOffset;
       let videoTimeOffset = timeOffset;
+      
+      console.log(nbVideoSamples)
       if (nbAudioSamples && nbVideoSamples) {
         // timeOffset is expected to be the offset of the first timestamp of this fragment (first DTS)
         // if first audio DTS is not aligned with first video DTS then we need to take that into account
@@ -1068,6 +1077,8 @@ class MP4Remuxer {
     }
     //notify end of parsing
     return videoData // dror's added code
+    console.log('videoData')
+    console.log(videoData)
     this.observer.trigger(Event.FRAG_PARSED);
   }
 
@@ -1113,7 +1124,12 @@ class MP4Remuxer {
         initPTS = initDTS = audioSamples[0].pts - audioTrack.inputTimeScale * timeOffset;
       }
     }
-
+    console.log('videoSamples.length')
+    console.log(videoSamples.length)
+    console.log('videoSamples.sps')
+    console.log(videoSamples.sps)
+    console.log('videoSamples.pps')
+    console.log(videoSamples.pps)
     if (videoTrack.sps && videoTrack.pps && videoSamples.length) {
       // let's use input time scale as MP4 video timescale
       // we use input time scale straight away to avoid rounding issues on frame duration / cts computation
@@ -1134,6 +1150,8 @@ class MP4Remuxer {
         this.observer.trigger(Event.INIT_PTS_FOUND, { initPTS: initPTS});
       }
     }
+    console.log('test5')
+    console.log(Object.keys(tracks).length)
 
     if(Object.keys(tracks).length) {
       observer.trigger(Event.FRAG_PARSING_INIT_SEGMENT,data);
@@ -3135,7 +3153,10 @@ function stringToArrayBuffer(str) {
       console.log("esle diff < upperLimit) || (diff > lowerLimit");
     }
   }
-
+var staticWidth 
+var staticHeight 
+var staticSps
+var staticPps
   function addBufferFromQueue() {
     
     if (queue.length > 0 && !videoSource.updating) {   
@@ -3147,20 +3168,47 @@ function stringToArrayBuffer(str) {
      console.log("units: ",units)
      for (var i =0; i <units.length; i++) {
        //console.log("type:", units[i].type)
-       if( units[i].type === 7) {
+       if(units[i].type === 7) {
          expGolombDecoder = new ExpGolomb(units[i].data);
          var config = expGolombDecoder.readSPS();
-         videoTrack.width = config.width;
-         videoTrack.height = config.height;
+         staticWidth = config.width;
+         staticHeight = config.height;
+         staticSps = [units[i].data] 
          console.log("config:", config)
+         console.log("sps:", [units[i].data] )
+       }
+       if (units[i].type === 8) {
+          staticPps = [units[i].data];
+          videoTrack.pps = [units[i].data];
+          console.log('pps')
        }
      }     
+      if (staticPps) {
+      videoTrack.pps = staticPps
+          }
+                  if (staticWidth) {
+      videoTrack.width = staticWidth
+     }
+        if (staticHeight) {
+videoTrack.height = staticHeight
+                }
+                  if (staticSps){
+                    videoTrack.sps = staticSps
+                  }
+                // john
+
+                                // has
+
+                          //an
+        // OCD
+
       var sample = {};
       sample.units = units;
       sample.pts = bufFromQueue.pts 
       sample.dts = bufFromQueue.dts 
       videoTrack.samples = [sample]
       // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
+      console.log(videoTrack)
       mp4frag = remuxer.remux(demuxerTS._audioTrack,videoTrack,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
       console.log(mp4frag)
       counter = counter + 20
