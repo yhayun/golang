@@ -487,6 +487,9 @@ class MP4 {
 //     throw error()
     console.trace()
     console.log('payload',payload)
+    if (payload) {
+      console.trace()
+    }
     // calculate the total size we need to allocate
     while (i--) {
       size += payload[i].byteLength;
@@ -2487,9 +2490,9 @@ class TSDemuxer {
           push = false;
           track.audFound = true;
           if (avcSample) {
-            pushAccesUnit(avcSample,track);
+            track.samples.push(avcSample)
           }
-          avcSample = this.avcSample = createAVCSample(false,pes.pts,pes.dts,debug ? 'AUD ': '');
+          avcSample = createAVCSample(false,pes.pts,pes.dts,debug ? 'AUD ': '');
           break;
         // Filler Data
         case 12:
@@ -2503,13 +2506,12 @@ class TSDemuxer {
           break;
       }
       if(avcSample && push) {
-        let units = avcSample.units;
-        units.push(unit);
+        avcSample.units.push(unit)
       }
     });
     // if last PES packet, push samples
     if (last && avcSample) {
-      pushAccesUnit(avcSample,track);
+      track.samples.push(avcSample)
       this.avcSample = null;
     }
   }
@@ -3154,16 +3156,197 @@ var staticHeight
 var staticSps
 var staticPps
 
+function createAVCSample (key,pts,dts,debug) {
+          return { key : key, pts : pts, dts : dts, units : [], debug : debug};
+    };
 
 function addBufferFromQueue() {    
     if (queue.length > 0 && !videoSource.updating) {   
     var bufFromQueue = queue.shift() 
-    var videoTrack = {}
-    videoTrack.inputTimeScale = 90000
+    var track = demuxerTS._avcTrack
+    track.inputTimeScale = 90000
     var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
     console.log("units: ",units)
+    var spsfound = false
+    var avcSample = createAVCSample(false, bufFromQueue.pts, bufFromQueue.pts, ''); 
+    var push = false
+
     for (var i =0; i <units.length; i++) {
-       //console.log("type:", units[i].type)
+      unit = units[i]
+      switch(unit.type) {
+        //NDR
+         case 1:
+           push = true;
+           if (!avcSample) {
+            avcSample = createAVCSample(true,pes.pts,pes.dts,'');
+           }
+           if(debug) {
+            avcSample.debug += 'NDR ';
+           }
+           avcSample.frame = true;
+           let data = unit.data;
+           // only check slice type to detect KF in case SPS found in same packet (any keyframe is preceded by SPS ...)
+           if (spsfound && data.length > 4) {
+             // retrieve slice type by parsing beginning of NAL unit (follow H264 spec, slice_header definition) to detect keyframe embedded in NDR
+             let sliceType = new ExpGolomb(data).readSliceType();
+             // 2 : I slice, 4 : SI slice, 7 : I slice, 9: SI slice
+             // SI slice : A slice that is coded using intra prediction only and using quantisation of the prediction samples.
+             // An SI slice can be coded such that its decoded samples can be constructed identically to an SP slice.
+             // I slice: A slice that is not an SI slice that is decoded using intra prediction only.
+             //if (sliceType === 2 || sliceType === 7) {
+             if (sliceType === 2 || sliceType === 4 || sliceType === 7 || sliceType === 9) {
+                avcSample.key = true;
+             }
+           }
+           break;
+        //IDR
+        case 5:
+          push = true;
+          // handle PES not starting with AUD
+          if (!avcSample) {
+            avcSample = createAVCSample(true,pes.pts,pes.dts,'');
+          }
+          if(debug) {
+            avcSample.debug += 'IDR ';
+          }
+          avcSample.key = true;
+          avcSample.frame = true;
+          break;
+        //SEI
+        case 6:
+          push = true;
+          if(debug && avcSample) {
+            avcSample.debug += 'SEI ';
+          }
+          expGolombDecoder = new ExpGolomb(this.discardEPB(unit.data));
+
+          // skip frameType
+          expGolombDecoder.readUByte();
+
+          var payloadType = 0;
+          var payloadSize = 0;
+          var endOfCaptions = false;
+          var b = 0;
+
+          while (!endOfCaptions && expGolombDecoder.bytesAvailable > 1) {
+            payloadType = 0;
+            do {
+                b = expGolombDecoder.readUByte();
+                payloadType += b;
+            } while (b === 0xFF);
+
+            // Parse payload size.
+            payloadSize = 0;
+            do {
+                b = expGolombDecoder.readUByte();
+                payloadSize += b;
+            } while (b === 0xFF);
+
+            // TODO: there can be more than one payload in an SEI packet...
+            // TODO: need to read type and size in a while loop to get them all
+            if (payloadType === 4 && expGolombDecoder.bytesAvailable !== 0) {
+
+              endOfCaptions = true;
+
+              var countryCode = expGolombDecoder.readUByte();
+
+              if (countryCode === 181) {
+                var providerCode = expGolombDecoder.readUShort();
+
+                if (providerCode === 49) {
+                  var userStructure = expGolombDecoder.readUInt();
+
+                  if (userStructure === 0x47413934) {
+                    var userDataType = expGolombDecoder.readUByte();
+
+                    // Raw CEA-608 bytes wrapped in CEA-708 packet
+                    if (userDataType === 3) {
+                      var firstByte = expGolombDecoder.readUByte();
+                      var secondByte = expGolombDecoder.readUByte();
+
+                      var totalCCs = 31 & firstByte;
+                      var byteArray = [firstByte, secondByte];
+
+                      for (i = 0; i < totalCCs; i++) {
+                        // 3 bytes per CC
+                        byteArray.push(expGolombDecoder.readUByte());
+                        byteArray.push(expGolombDecoder.readUByte());
+                        byteArray.push(expGolombDecoder.readUByte());
+                      }
+
+                      this._insertSampleInOrder(this._txtTrack.samples, { type: 3, pts: pes.pts, bytes: byteArray });
+                    }
+                  }
+                }
+              }
+            }
+            else if (payloadSize < expGolombDecoder.bytesAvailable)
+            {
+              for (i = 0; i<payloadSize; i++)
+              {
+                expGolombDecoder.readUByte();
+              }
+            }
+          }
+          break;
+        //SPS
+        case 7:
+          push = true;
+          spsfound = true;
+          if(debug && avcSample) {
+            avcSample.debug += 'SPS ';
+          }
+          if(!track.sps) {
+            expGolombDecoder = new ExpGolomb(unit.data);
+            var config = expGolombDecoder.readSPS();
+            track.width = config.width;
+            track.height = config.height;
+            track.pixelRatio = config.pixelRatio;
+            track.sps = [unit.data];
+            track.duration = this._duration;
+            var codecarray = unit.data.subarray(1, 4);
+            var codecstring = 'avc1.';
+            for (i = 0; i < 3; i++) {
+              var h = codecarray[i].toString(16);
+              if (h.length < 2) {
+                h = '0' + h;
+              }
+              codecstring += h;
+            }
+            track.codec = codecstring;
+          }
+          break;
+        //PPS
+        case 8:
+          push = true;
+          if(debug && avcSample) {
+            avcSample.debug += 'PPS ';
+          }
+          if (!track.pps) {
+            track.pps = [unit.data];
+          }
+          break;
+        // AUD
+        case 9:
+          push = false;
+          track.audFound = true;
+          if (avcSample) {
+            track.samples.push(avcSample)
+          }
+          avcSample = createAVCSample(false,pes.pts,pes.dts,debug ? 'AUD ': '');
+          break;
+        // Filler Data
+        case 12:
+          push = false;
+          break;
+        default:
+          push = false;
+          if (avcSample) {
+            avcSample.debug += 'unknown NAL ' + unit.type + ' ';
+          }
+          break;
+      } 
+    //---------------OUR CODE-------------------------------------
        if(units[i].type === 7) {
          expGolombDecoder = new ExpGolomb(units[i].data);
          var config = expGolombDecoder.readSPS();
@@ -3175,31 +3358,31 @@ function addBufferFromQueue() {
        }
        if (units[i].type === 8) {
           staticPps = [units[i].data];
-          videoTrack.pps = [units[i].data];
+          track.pps = [units[i].data];
           console.log('pps')
        }
     }     
     if (staticPps) {
-      videoTrack.pps = staticPps
+      track.pps = staticPps
     }
     if (staticWidth) {
-      videoTrack.width = staticWidth
+      track.width = staticWidth
     }
     if (staticHeight) {
-      videoTrack.height = staticHeight
+      track.height = staticHeight
     }
     if (staticSps){
-      videoTrack.sps = staticSps
+      track.sps = staticSps
     }
-    if (!videoTrack.sps || !videoTrack.pps || !videoTrack.height || !videoTrack.width) {
+    if (track.sps && track.pps && track.height && track.width) {
       var sample = {};
       sample.units = units;
       sample.pts = bufFromQueue.pts 
       sample.dts = bufFromQueue.dts 
-      videoTrack.samples = [sample]
+      track.samples = [sample]
       // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
-      console.log(videoTrack)
-      mp4frag = remuxer.remux(demuxerTS._audioTrack,videoTrack,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
+      console.log(track)
+      mp4frag = remuxer.remux(demuxerTS._audioTrack,track,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
       console.log(mp4frag)
       counter = counter + 20
       // continue remuxing , create mp4frag
