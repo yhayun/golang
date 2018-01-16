@@ -11,7 +11,7 @@ import (
 )
 
 var Done = make(chan bool)
-var Queue = make(chan []byte, 1)
+var Queue = make(chan []byte, 5)
 var counter int = 1
 
 func getMediaBase(mId int) string{
@@ -39,9 +39,6 @@ func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName s
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	w.Header().Set("Content-Type", "text/plain; charset=x-user-defined")
-	pts := (body[len(body)-16:len(body)-8])//bytesToUint64
-	dts := (body[:len(body)-8])
-	fmt.Print("pts", pts, " dts:",0, "\n")
 	w.Write(body)
 }
 
@@ -170,13 +167,15 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 		}
 
 		counter++
-		fmt.Println("counter: ",counter,"  dts:",frame.GetDTS() ,"  pts:",frame.GetPTS())
+		fmt.Println("counter: ",counter,"  pts:",uint64TObytes((frame.GetPTS())) ,"  dts:",uint64TObytes(frame.GetDTS()))
 		actualData := frame.GetData()[:frame.Size()]
 		actualData = append(actualData, uint64TObytes((frame.GetPTS()))...)
 		actualData = append(actualData, uint64TObytes((frame.GetDTS()))...)
-		//fmt.Println(actualData)
+		res := make([]byte, len(actualData))
+		copy(res, actualData)
+		//fmt.Println("p:",res[len(res)-16:len(res)-8]," d:",res[len(res)-8:len(res)])
 		length += frame.Size()
-		Queue <- actualData  // data, PTS(8bytes), DTS(8bytes)
+		Queue <- res  // data, PTS(8bytes), DTS(8bytes)
 		videoFrames.Recylce(frame)
 	}
 }
