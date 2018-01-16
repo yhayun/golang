@@ -1010,14 +1010,10 @@ class MP4Remuxer {
   remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) {
     // generate Init Segment if needed
     if (!this.ISGenerated) {
-      console.log('test1')
       console.log(videoTrack)
       this.generateIS(audioTrack,videoTrack,timeOffset);
-      console.log('test2')
     }
-    console.log('test3')
     if (this.ISGenerated) {
-      console.log('test4')
       const nbAudioSamples = audioTrack.samples.length;
       const nbVideoSamples = videoTrack.samples.length;
       let audioTimeOffset = timeOffset;
@@ -1150,7 +1146,6 @@ class MP4Remuxer {
         this.observer.trigger(Event.INIT_PTS_FOUND, { initPTS: initPTS});
       }
     }
-    console.log('test5')
     console.log(Object.keys(tracks).length)
 
     if(Object.keys(tracks).length) {
@@ -3157,16 +3152,16 @@ var staticWidth
 var staticHeight 
 var staticSps
 var staticPps
-  function addBufferFromQueue() {
-    
+
+
+function addBufferFromQueue() {    
     if (queue.length > 0 && !videoSource.updating) {   
-    var bufFromQueue = queue.shift()  // john this is where you parse the buff to json
-    //var bufFromQueue = {data : new Int8Array(queue.shift())}   // temp! remove this when john is done parsing the json
+    var bufFromQueue = queue.shift() 
     var videoTrack = {}
-      videoTrack.inputTimeScale = 90000
-        var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
-     console.log("units: ",units)
-     for (var i =0; i <units.length; i++) {
+    videoTrack.inputTimeScale = 90000
+    var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
+    console.log("units: ",units)
+    for (var i =0; i <units.length; i++) {
        //console.log("type:", units[i].type)
        if(units[i].type === 7) {
          expGolombDecoder = new ExpGolomb(units[i].data);
@@ -3182,26 +3177,20 @@ var staticPps
           videoTrack.pps = [units[i].data];
           console.log('pps')
        }
-     }     
-      if (staticPps) {
+    }     
+    if (staticPps) {
       videoTrack.pps = staticPps
-          }
-                  if (staticWidth) {
+    }
+    if (staticWidth) {
       videoTrack.width = staticWidth
-     }
-        if (staticHeight) {
-videoTrack.height = staticHeight
-                }
-                  if (staticSps){
-                    videoTrack.sps = staticSps
-                  }
-                // john
-
-                                // has
-
-                          //an
-        // OCD
-
+    }
+    if (staticHeight) {
+      videoTrack.height = staticHeight
+    }
+    if (staticSps){
+      videoTrack.sps = staticSps
+    }
+    if (!videoTrack.sps || !videoTrack.pps || !videoTrack.height || !videoTrack.width) {
       var sample = {};
       sample.units = units;
       sample.pts = bufFromQueue.pts 
@@ -3214,14 +3203,15 @@ videoTrack.height = staticHeight
       counter = counter + 20
       // continue remuxing , create mp4frag
       // videoSource.appendBuffer(new Int8Array(queue.shift()));
-      videoSource.appendBuffer(new Int8Array(mp4frag));
-      i++;
-      if(i == clientQueueSize) {
-        videoElement.play();          
-        timingCheckIntervalID = setInterval(timingCheck, 1000);
-      }
+      videoSource.appendBuffer(new Int8Array(mp4frag));      
+    }
+    i++;
+    if(i == clientQueueSize) {
+      videoElement.play();          
+      timingCheckIntervalID = setInterval(timingCheck, 1000);
     }
   }
+}
   
   //   function ProcessQueue() {
   //   for (u= 0; u < queue.length; u++) {
