@@ -2997,11 +2997,11 @@ var counter = 1
     lastMessageTime = new Date().getTime();
     binaryClient.get(getUrl, function(byteArray) {
       if (byteArray.byteLength == 0) {
-        console.log('Skipping since byteArray.byteLength = ' + byteArray.byteLength);
+        console.log('Skipping since byteArray.byteLength = ' + byteArray.data.byteLength);
         return;
       }   
       if(initFlag == false) {
-            console.log('Got data first time: ' + byteArray.byteLength);        
+            console.log('Got data first time: ' + byteArray.data.byteLength);        
         initFlag = true;        
         initialization = new Int8Array(byteArray);  
         videoElement.loop = false;
@@ -3012,12 +3012,12 @@ var counter = 1
         videoSource.appendBuffer(initialization);
         // Wait for the update complete event before continuing
                 videoSource.addEventListener("update",updateFunct, false);    
-                buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 100);  
+                buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 25);  
                 queue.push(byteArray); 
           return;   
 //        console.log('after promise ...'); 
       }
-          console.log('Got data: ' + byteArray.byteLength);
+          console.log('Got data: ' + byteArray.data.byteLength);
       queue.push(byteArray);
       console.log('queue.length: ' + queue.length);
     });   
@@ -3073,7 +3073,7 @@ byteArrayToLong = function(/*byte[]*/byteArray) {
     for ( var i = byteArray.length - 1; i >= 0; i--) {
         value = (value * 256) + byteArray[i];
     }
-    console.log("arr:",byteArray, " - val:",value)
+    //console.log("arr:",byteArray, " - val:",value)
     return value;
 };
 
