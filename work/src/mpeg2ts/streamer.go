@@ -11,7 +11,7 @@ import (
 )
 
 var Done = make(chan bool)
-var Queue = make(chan []byte, 500)
+var Queue = make(chan []byte, 1)
 var counter int = 1
 
 func getMediaBase(mId int) string{
@@ -39,7 +39,9 @@ func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName s
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	w.Header().Set("Content-Type", "text/plain; charset=x-user-defined")
-
+	pts := (body[len(body)-16:len(body)-8])//bytesToUint64
+	dts := (body[:len(body)-8])
+	fmt.Print("pts", pts, " dts:",0, "\n")
 	w.Write(body)
 }
 

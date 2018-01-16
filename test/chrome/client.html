@@ -2811,12 +2811,12 @@ class TSDemuxer {
   var queue           = [];
   var videoSource       = null;
   var sessionId         = null;
-var baseUrl = "http://localhost:8000/media/stream/test/1";
+  var baseUrl = "http://localhost:8000/media/stream/test/1";
   var videoElement      = document.getElementById("myVideo");
   var initFlag        = false;
   var initialization    = null;
   var bufferUpdated     = false;
-  var getUrl          = null;
+  var getUrl          = "http://localhost:8000/media/stream/test/1";
   var binaryClient      = null; 
   var mediaSource       = null;
   var i             = 0;
@@ -2827,7 +2827,7 @@ var baseUrl = "http://localhost:8000/media/stream/test/1";
   var upperLimit      = -1;
   var liveOffset      = -1;
   var lowerLimit      = -1;   
-    var mimeCodec       = 'video/mp4; codecs="avc1.4d401e"';
+  var mimeCodec       = 'video/mp4; codecs="avc1.4d401e"';
 
   initVideoConteiner();
 
@@ -2863,34 +2863,15 @@ var baseUrl = "http://localhost:8000/media/stream/test/1";
 
 
   function sourceOpen (_) {
-
-
     console.log("Current mediaSource.readyState: " +  this.readyState); // open
-        var mediaSource = this;
-          videoSource = mediaSource.addSourceBuffer(mimeCodec);
-
-        var xmlhttp = new XMLHttpRequest();
-
-      
-    var url = baseUrl+"action=init&videoIP="+videoIP+
-              "&videoPort="+videoPort+"&initialTime=0&serverQueueSize="+serverQueueSize;
-
-    console.log('url: '       + url)
-
-      //var client = new HttpClient();
-
+    var mediaSource = this;
+    videoSource = mediaSource.addSourceBuffer(mimeCodec);
+    var xmlhttp = new XMLHttpRequest();
     console.log("Invoking init ..."); 
-    //client.get(url, function(response) {
-//       sessionId = response;
-//       console.log('Got session id: ' + sessionId)
-
-      getUrl       = baseUrl//+"action=getData&sessionId="+sessionId;
-      console.log("getUrl: " + getUrl); 
-       binaryClient   = new BinaryHttpClient();  
-        retrieverID = setInterval(retrieveData, 1000);
-   // });
-        
-    };
+    console.log("getUrl: " + baseUrl); 
+    binaryClient   = new BinaryHttpClient();  
+    retrieverID = setInterval(retrieveData, 1000);        
+  };
 
       
   
@@ -3037,6 +3018,7 @@ var counter = 1
                   var pts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-16,-8)))
                   var dts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-8)))
                   var frame = {data: arrayBuffer, pts: pts, dts: dts };
+                  console.log(frame)
                   aCallback(frame);
               } else {
                 console.log("Request failed with status:",anHttpRequest.status)
@@ -3073,7 +3055,7 @@ byteArrayToLong = function(/*byte[]*/byteArray) {
     for ( var i = byteArray.length - 1; i >= 0; i--) {
         value = (value * 256) + byteArray[i];
     }
-
+    console.log("arr:",byteArray, " - val:",value)
     return value;
 };
 
@@ -3157,8 +3139,8 @@ function stringToArrayBuffer(str) {
   function addBufferFromQueue() {
     
     if (queue.length > 0 && !videoSource.updating) {   
-    // var bufFromQueue = new Int8Array(queue.shift())   // john this is where you parse the buff to json
-    var bufFromQueue = {data : new Int8Array(queue.shift())}   // temp! remove this when john is done parsing the json
+    var bufFromQueue = queue.shift()  // john this is where you parse the buff to json
+    //var bufFromQueue = {data : new Int8Array(queue.shift())}   // temp! remove this when john is done parsing the json
     var videoTrack = {}
       videoTrack.inputTimeScale = 90000
         var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
