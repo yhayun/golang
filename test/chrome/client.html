@@ -1048,7 +1048,7 @@ class MP4Remuxer {
           this.remuxVideo(videoTrack,videoTimeOffset,contiguous,audioTrackLength, accurateTimeOffset);
         }
       } else {
-        let videoData;
+        var videoData;
         //logger.log('nb AVC samples:' + videoTrack.samples.length);
         if (nbVideoSamples) {
           videoData = this.remuxVideo(videoTrack,videoTimeOffset,contiguous, accurateTimeOffset);
@@ -1067,6 +1067,7 @@ class MP4Remuxer {
       this.remuxText(textTrack,timeOffset);
     }
     //notify end of parsing
+    return videoData // dror's added code
     this.observer.trigger(Event.FRAG_PARSED);
   }
 
@@ -1142,7 +1143,7 @@ class MP4Remuxer {
         this._initDTS = initDTS;
       }
     } else {
-      observer.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: false, reason: 'no audio/video samples found'});
+//       observer.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: false, reason: 'no audio/video samples found'});  dror: i'm commenting out all observer calls..
     }
   }
 
@@ -1391,7 +1392,7 @@ class MP4Remuxer {
       nb: outputSamples.length,
       dropped : dropped
     };
-    this.observer.trigger(Event.FRAG_PARSING_DATA, data);
+    // this.observer.trigger(Event.FRAG_PARSING_DATA, data);
     return data;
   }
 
@@ -2916,7 +2917,10 @@ class _observer {
     console.log("data",data)
   } 
 }
-
+// var _observer = new EventEmitter();
+//   observer.trigger = function trigger (event, ...data) {
+//     observer.emit(event, event, ...data);
+// };
 // var navigator = {
 //   userAgent :"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7",
 // }
@@ -2931,10 +2935,10 @@ var _config = {
 
 console.log("init");
 var remuxer = new MP4Remuxer(_observer, _config,_typeSupported, undefined);
-var mp4 = new MP4();
+// var mp4 = new MP4();
 MP4.init()
 var demuxerTS = new TSDemuxer(_observer, remuxer, _config, _typeSupported);
-demuxerTS.resetInitSegment({}, 'audioCodec', 'videoCodec', undefined)
+demuxerTS.resetInitSegment({}, null, null, undefined)
 console.log("after init");
 
 //-------------------------------------------------------------------------------------------------------------
@@ -3005,26 +3009,7 @@ var counter = 1
         videoElement.autoplay = true;
         videoElement.play();      
         console.log("mediaSource.readyState: "+mediaSource.readyState);       
-          //console.log('Attempting to play !');
 
-        /*
-        videoElement.play().then(function() {
-          console.log('The play() Promise fulfilled! Rock on!');
-
-          videoSource.appendBuffer(initialization);
-          // Wait for the update complete event before continuing
-                  videoSource.addEventListener("update",updateFunct, false);    
-                  buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 100);  
-                  
-                  queue.push(byteArray); 
-            return;
-            
-        }).catch(function(error) {
-          console.log('The play() Promise rejected!');
-          console.log('Use the Play button instead.');
-          console.log(error);
-        });
-        */
         videoSource.appendBuffer(initialization);
         // Wait for the update complete event before continuing
                 videoSource.addEventListener("update",updateFunct, false);    
@@ -3177,7 +3162,7 @@ function stringToArrayBuffer(str) {
     var videoTrack = {}
       videoTrack.inputTimeScale = 90000
         var units = demuxerTS._parseAVCNALu(bufFromQueue.data)
-     //console.log("units: ",units)
+     console.log("units: ",units)
      for (var i =0; i <units.length; i++) {
        //console.log("type:", units[i].type)
        if( units[i].type === 7) {
@@ -3190,13 +3175,12 @@ function stringToArrayBuffer(str) {
      }     
       var sample = {};
       sample.units = units;
-      // sample.pts = u.pts // temp! restore this when john is done parsing the json
-      // sample.dts = u.dts // temp! resotre this when john is done parsing the json
-      sample.pts = counter // temp! REMOVE this when john is done parsing the json
-      sample.dts = counter // temp! REMOVE this when john is done parsing the json
+      sample.pts = bufFromQueue.pts 
+      sample.dts = bufFromQueue.dts 
       videoTrack.samples = [sample]
-      // mp4frag = remuxVideo(videoTrack, sample.pts, 0, 0, 0);// temp! resotre this when john is done parsing the json
-      mp4frag = remuxer.remuxVideo(videoTrack, counter, 0, 0, 0);
+      // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
+      mp4frag = remuxer.remux(demuxerTS._audioTrack,videoTrack,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
+      console.log(mp4frag)
       counter = counter + 20
       // continue remuxing , create mp4frag
       // videoSource.appendBuffer(new Int8Array(queue.shift()));
