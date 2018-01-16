@@ -3045,10 +3045,10 @@ console.log("after init");
           anHttpRequest.open( "GET", aUrl, true );          
           anHttpRequest.onload = function (oEvent) {
              if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                  //last 8 bytes are PTS+DTS in that order. the rest is the payload.
-                  var arrayBuffer = stringToArrayBuffer(anHttpRequest.responseText.slice(0,-8)); 
-                  var pts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-8,-4)))
-                  var dts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-4)))
+                  //last 8+8 bytes are PTS+DTS in that order. the rest is the payload.
+                  var arrayBuffer = stringToArrayBuffer(anHttpRequest.responseText.slice(0,-16)); 
+                  var pts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-16,-8)))
+                  var dts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-8)))
                   var frame = {data: arrayBuffer, pts: pts, dts: dts };
                   aCallback(frame);
               } else {

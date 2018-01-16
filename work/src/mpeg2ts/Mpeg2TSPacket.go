@@ -26,8 +26,8 @@ type Mpeg2TSPacket struct {
 	pcr long
 	//// in case of PES
 	startOfPES bool
-	pts uint32
-	dts uint32
+	pts uint64
+	dts uint64
 	payloadExist bool
 	payloadOffset int
 	payloadLength int
@@ -233,7 +233,7 @@ func (tsP* Mpeg2TSPacket) GetPayloadLength() int {
 	return tsP.payloadLength
 }
 
-func GetPTS(buffer []byte, offset int) uint32 {
+func GetPTS(buffer []byte, offset int) uint64 {
 
 	var dataOffset int = TsDataOffset(buffer, offset);
 
@@ -243,30 +243,30 @@ func GetPTS(buffer []byte, offset int) uint32 {
 
 	var ptsOffset int= 9 + dataOffset;
 
-	var pts uint32;
+	var pts uint64;
 
-	pts = ((uint32) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30
-	pts += ((uint32) (buffer[1 + ptsOffset] & 0xff) << 22)
-	pts += ((uint32) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15
-	pts += ((uint32) (buffer[3 + ptsOffset] & 0xff) << 7)
-	pts += (uint32)((buffer[4 + ptsOffset] & 0xfe) >> 1)
+	pts = ((uint64) ((buffer[ptsOffset] & 0x0e) >> 1)) << 30
+	pts += ((uint64) (buffer[1 + ptsOffset] & 0xff) << 22)
+	pts += ((uint64) ((buffer[2 + ptsOffset] & 0xfe) >> 1)) << 15
+	pts += ((uint64) (buffer[3 + ptsOffset] & 0xff) << 7)
+	pts += (uint64)((buffer[4 + ptsOffset] & 0xfe) >> 1)
 	return pts;
 }
 
-func GetDTS(buffer []byte, offset int) uint32 {
+func GetDTS(buffer []byte, offset int) uint64 {
 	var tsDataOffset int = TsDataOffset(buffer, offset)+14;
-	var dts uint32 = (uint32)((buffer[tsDataOffset] & 0x0e) >> 1)
- 	dts = (dts << 15) +(uint32)((buffer[1 + tsDataOffset] & 0xff) << 7) + (uint32)((buffer[2+ tsDataOffset] & 0xfe) >> 1)
- 	dts = (dts << 15) + (uint32)((buffer[3 + tsDataOffset] & 0xff) << 7) + (uint32)((buffer[4+ tsDataOffset] & 0xfe) >> 1)
+	var dts uint64 = (uint64)((buffer[tsDataOffset] & 0x0e) >> 1)
+ 	dts = (dts << 15) +(uint64)((buffer[1 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[2+ tsDataOffset] & 0xfe) >> 1)
+ 	dts = (dts << 15) + (uint64)((buffer[3 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[4+ tsDataOffset] & 0xfe) >> 1)
 
  	return dts
  }
 
-func (tsP* Mpeg2TSPacket) GetPTS() uint32 {
+func (tsP* Mpeg2TSPacket) GetPTS() uint64 {
 	return tsP.pts
 }
 
-func (tsP* Mpeg2TSPacket) GetDTS() uint32 {
+func (tsP* Mpeg2TSPacket) GetDTS() uint64 {
 	return tsP.dts
 }
 
