@@ -168,19 +168,22 @@ func FinalQueueFilller(videoFrames frameQueue ) {
 		}
 
 		counter++
-		fmt.Println("counter: ",counter,"  pts:", uint32TObytes((frame.GetPTS())),"  pts-64:",frame.GetPTS())
+		fmt.Println("counter: ",counter,"  dts:",frame.GetDTS() ,"  pts:",frame.GetPTS())
 		actualData := frame.GetData()[:frame.Size()]
-		actualData = append(actualData, uint32TObytes((frame.GetPTS()))...)
-		actualData = append(actualData, uint32TObytes((frame.GetDTS()))...)
+		actualData = append(actualData, uint64TObytes((frame.GetPTS()))...)
+		actualData = append(actualData, uint64TObytes((frame.GetDTS()))...)
 		//fmt.Println(actualData)
 		length += frame.Size()
-		Queue <- actualData  // data, PTS(4bytes), DTS(4bytes)
+		Queue <- actualData  // data, PTS(8bytes), DTS(8bytes)
 		videoFrames.Recylce(frame)
 	}
 }
 
-func uint32TObytes(num uint32) []byte {
-	bs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(bs, num)
-	return bs;
+func uint64TObytes(num uint64) []byte {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(num))
+	return b;
+}
+func bytesToUint64(b []byte) uint64 {
+	return uint64(binary.LittleEndian.Uint64(b))
 }
