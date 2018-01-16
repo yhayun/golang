@@ -38,7 +38,7 @@ func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName s
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	w.Header().Set("Content-Type", "application/json; charset=x-user-defined")
+	w.Header().Set("Content-Type", "text/plain; charset=x-user-defined")
 
 	w.Write(body)
 }
