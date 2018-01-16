@@ -253,14 +253,27 @@ func GetPTS(buffer []byte, offset int) uint64 {
 	return pts;
 }
 
-func GetDTS(buffer []byte, offset int) uint64 {
-	var tsDataOffset int = TsDataOffset(buffer, offset)+14;
-	var dts uint64 = (uint64)((buffer[tsDataOffset] & 0x0e) >> 1)
- 	dts = (dts << 15) +(uint64)((buffer[1 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[2+ tsDataOffset] & 0xfe) >> 1)
- 	dts = (dts << 15) + (uint64)((buffer[3 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[4+ tsDataOffset] & 0xfe) >> 1)
+//func GetDTS(buffer []byte, offset int) uint64 {
+//	var tsDataOffset int = TsDataOffset(buffer, offset)+14;
+//	var dts uint64 = (uint64)((buffer[tsDataOffset] & 0x0e) >> 1)
+// 	dts = (dts << 15) +(uint64)((buffer[1 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[2+ tsDataOffset] & 0xfe) >> 1)
+// 	dts = (dts << 15) + (uint64)((buffer[3 + tsDataOffset] & 0xff) << 7) + (uint64)((buffer[4+ tsDataOffset] & 0xfe) >> 1)
+//
+// 	return dts
+// }
 
- 	return dts
- }
+func GetDTS(buffer []byte, offset int) uint64 {
+	var dataOffset int = TsDataOffset(buffer, offset);
+	var dtsOffset int= 14 + dataOffset;
+	var dts uint64;
+
+	dts = ((uint64) ((buffer[dtsOffset] & 0x0e) >> 1)) << 30
+	dts += ((uint64) (buffer[1 + dtsOffset] & 0xff) << 22)
+	dts += ((uint64) ((buffer[2 + dtsOffset] & 0xfe) >> 1)) << 15
+	dts += ((uint64) (buffer[3 + dtsOffset] & 0xff) << 7)
+	dts += (uint64)((buffer[4 + dtsOffset] & 0xfe) >> 1)
+	return dts;
+}
 
 func (tsP* Mpeg2TSPacket) GetPTS() uint64 {
 	return tsP.pts
