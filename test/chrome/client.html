@@ -2879,15 +2879,15 @@ var baseUrl = "http://localhost:8000/media/stream/test/1";
       //var client = new HttpClient();
 
     console.log("Invoking init ..."); 
-    client.get(url, function(response) {
-      sessionId = response;
-      console.log('Got session id: ' + sessionId)
+    //client.get(url, function(response) {
+//       sessionId = response;
+//       console.log('Got session id: ' + sessionId)
 
-      getUrl       = baseUrl+"action=getData&sessionId="+sessionId;
+      getUrl       = baseUrl//+"action=getData&sessionId="+sessionId;
       console.log("getUrl: " + getUrl); 
-       // binaryClient   = new BinaryHttpClient();  
+       binaryClient   = new BinaryHttpClient();  
         retrieverID = setInterval(retrieveData, 1000);
-    });
+   // });
         
     };
 
@@ -2931,6 +2931,8 @@ var _config = {
 
 console.log("init");
 var remuxer = new MP4Remuxer(_observer, _config,_typeSupported, undefined);
+var mp4 = new MP4();
+MP4.init()
 var demuxerTS = new TSDemuxer(_observer, remuxer, _config, _typeSupported);
 demuxerTS.resetInitSegment({}, 'audioCodec', 'videoCodec', undefined)
 console.log("after init");
@@ -2943,7 +2945,7 @@ console.log("after init");
 // var binaryClient = new BinaryHttpClient();
 // var queue  = [];
 // var initFlag = false
-// var counter = 1
+var counter = 1
 // //Run Queue Filler:
 // FillQueue();
 /**
@@ -3194,7 +3196,7 @@ function stringToArrayBuffer(str) {
       sample.dts = counter // temp! REMOVE this when john is done parsing the json
       videoTrack.samples = [sample]
       // mp4frag = remuxVideo(videoTrack, sample.pts, 0, 0, 0);// temp! resotre this when john is done parsing the json
-      mp4frag = remuxVideo(videoTrack, counter, 0, 0, 0);
+      mp4frag = remuxer.remuxVideo(videoTrack, counter, 0, 0, 0);
       counter = counter + 20
       // continue remuxing , create mp4frag
       // videoSource.appendBuffer(new Int8Array(queue.shift()));
