@@ -11,7 +11,7 @@ import (
 )
 
 var Done = make(chan bool)
-var Queue = make(chan []byte, 100)
+var Queue = make(chan []byte, 500)
 var counter int = 1
 
 func getMediaBase(mId int) string{
