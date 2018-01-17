@@ -5,6 +5,9 @@
 </head>
 <body>
 
+<a href="" id="a">click here to download your file</a>
+<button onclick="download('file text', 'test_object.mp4', 'text/plain')">Create file</button>
+
   <div>
     Video IP - for unicast 127.0.0.1:<br>
     <input id="videoIP" type="text" value="127.0.0.1" />
@@ -1133,7 +1136,7 @@ class MP4Remuxer {
       let audioTimeOffset = timeOffset;
       let videoTimeOffset = timeOffset;
       
-      console.log(nbVideoSamples)
+      //console.log(nbVideoSamples)
       if (nbAudioSamples && nbVideoSamples) {
         // timeOffset is expected to be the offset of the first timestamp of this fragment (first DTS)
         // if first audio DTS is not aligned with first video DTS then we need to take that into account
@@ -2927,10 +2930,12 @@ class TSDemuxer {
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
+  var queue           = [];
+  var segQueue        = [];
+ //-------//
   var videoIP       = null;
   var videoPort       = -1;
   var serverQueueSize   = -1;
-  var queue           = [];
   var videoSource       = null;
   var sessionId         = null;
   var baseUrl = "http://localhost:8000/media/stream/test/1";
@@ -2983,7 +2988,7 @@ class TSDemuxer {
     console.log("Invoking init ..."); 
     console.log("getUrl: " + baseUrl); 
     binaryClient   = new BinaryHttpClient();  
-    retrieverID = setInterval(retrieveData, 500);        
+    var retrieverID = setInterval(retrieveData, 50);        
   };
 
       
@@ -3011,8 +3016,13 @@ logger.warn = logger.log = logger.error = function warn(input) {
 _observer.trigger = function trigger(event, data) {
     console.log("----------OBSERVER TRIGGERED!--------")
     console.log("event:",event)
-    console.log("data",data)
-    console.trace()
+    //console.log("data",data)
+    if(event == 'hlsFragParsingInitSegment') {
+      console.log("----Pushed initSegment into the segQueue ------",data.tracks.video.initSegment);
+      segQueue.push(data.tracks.video.initSegment)
+      videoSource.appendBuffer(data.tracks.video.initSegment);  
+    }
+    // console.trace()
   } 
 // var _observer = new EventEmitter();
 //   observer.trigger = function trigger (event, ...data) {
@@ -3058,7 +3068,7 @@ console.log("after init");
         videoSource.appendBuffer(initialization);
         // Wait for the update complete event before continuing
         videoSource.addEventListener("update",updateFunct, false);    
-        buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 10);  
+        var buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 50);  
         queue.push(byteArray); 
         return;   
       }
@@ -3081,7 +3091,7 @@ console.log("after init");
                   var dts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-8)))
 
                   var frame = {data: arrayBuffer, pts: pts, dts: pts };
-                  console.log(frame)
+                  //console.log(frame)
                   aCallback(frame);
               } else {
                 console.log("Request failed with status:",anHttpRequest.status)
@@ -3123,6 +3133,29 @@ byteArrayToLong = function(/*byte[]*/byteArray) {
 function stringToArrayBuffer(str) {
   return (new Uint8Array([].map.call(str,function(x){return x.charCodeAt(0)})));
 }
+
+// concatenate(Uint8Array,Uint8Array.of(1, 2), Uint8Array.of(3, 4))
+function concatenate(resultConstructor, ...arrays) {
+    let totalLength = 0;
+    for (let arr of arrays) {
+        totalLength += arr.length;
+    }
+    let result = new resultConstructor(totalLength);
+    let offset = 0;
+    for (let arr of arrays) {
+        result.set(arr, offset);
+        offset += arr.length;
+    }
+    return result;
+}
+
+function download(text, name, type) {
+  var a = document.getElementById("a");
+  var file = new Blob([text], {type: type});
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+}
+
 //--------------------------------------------------------------
 // HELPER FUNCTIONS ----- END
 //--------------------------------------------------------------
@@ -3400,12 +3433,12 @@ function addBufferFromQueue() {
          staticHeight = config.height;
          staticSps = [units[i].data] 
          console.log("config:", config)
-         console.log("sps:", [units[i].data] )
+         //console.log("sps:", [units[i].data] )
        }
        if (units[i].type === 8) {
           staticPps = [units[i].data];
           track.pps = [units[i].data];
-          console.log('pps', track.pps)
+          //console.log('pps', track.pps)
        }
     }     
     if (staticPps) {
@@ -3428,10 +3461,23 @@ function addBufferFromQueue() {
       track.samples = [sample]
       // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
       mp4frag = remuxer.remux(demuxerTS._audioTrack,track,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
+      segQueue.push(mp4frag.data1)//moof
+      segQueue.push(mp4frag.data2)//mdat
       console.log(mp4frag)
+      if (segQueue.length  == 1201) {
+        var res_file = segQueue[0];
+        for(var i=0; i< segQueue.length; i++) {
+          var res_file = concatenate(Uint8Array, res_file, segQueue[i]);
+        }
+        //clearInterval(timingCheckIntervalID);
+        //clearInterval(retrieverID);
+        //clearInterval(buffersFromQueueIntervalID);
+        download(res_file, 'test_object.mp4', 'text/plain')
+        console.log("--||---||--||-",res_file)
+      }
       // continue remuxing , create mp4frag
-      // videoSource.appendBuffer(new Int8Array(queue.shift()));
-      videoSource.appendBuffer(new Int8Array(mp4frag));      
+ 
+      videoSource.appendBuffer(concatenate(Uint8Array, mp4frag.data1, mp4frag.data2));      
     }
     i++;
     if(i == clientQueueSize) {
