@@ -2988,7 +2988,7 @@ class TSDemuxer {
     console.log("Invoking init ..."); 
     console.log("getUrl: " + baseUrl); 
     binaryClient   = new BinaryHttpClient();  
-    var retrieverID = setInterval(retrieveData, 50);        
+    var retrieverID = setInterval(retrieveData, 40);        
   };
 
       
@@ -3020,7 +3020,7 @@ _observer.trigger = function trigger(event, data) {
     if(event == 'hlsFragParsingInitSegment') {
       console.log("----Pushed initSegment into the segQueue ------",data.tracks.video.initSegment);
       segQueue.push(data.tracks.video.initSegment)
-      videoSource.appendBuffer(data.tracks.video.initSegment);  
+      //videoSource.appendBuffer(data.tracks.video.initSegment);  
     }
     // console.trace()
   } 
@@ -3068,7 +3068,7 @@ console.log("after init");
         videoSource.appendBuffer(initialization);
         // Wait for the update complete event before continuing
         videoSource.addEventListener("update",updateFunct, false);    
-        var buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 50);  
+        var buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 40);  
         queue.push(byteArray); 
         return;   
       }
@@ -3461,28 +3461,27 @@ function addBufferFromQueue() {
       track.samples = [sample]
       // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
       mp4frag = remuxer.remux(demuxerTS._audioTrack,track,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
-      segQueue.push(mp4frag.data1)//moof
-      segQueue.push(mp4frag.data2)//mdat
-      console.log(mp4frag)
-      if (segQueue.length  == 1201) {
-        var res_file = segQueue[0];
-        for(var i=0; i< segQueue.length; i++) {
-          var res_file = concatenate(Uint8Array, res_file, segQueue[i]);
-        }
-        //clearInterval(timingCheckIntervalID);
-        //clearInterval(retrieverID);
-        //clearInterval(buffersFromQueueIntervalID);
-        download(res_file, 'test_object.mp4', 'text/plain')
-        console.log("--||---||--||-",res_file)
-      }
-      // continue remuxing , create mp4frag
- 
-      videoSource.appendBuffer(concatenate(Uint8Array, mp4frag.data1, mp4frag.data2));      
+      //console.log(mp4frag)
+
+
+      // segQueue.push(mp4frag.data1)//moof
+      // segQueue.push(mp4frag.data2)//mdat
+      // if (segQueue.length  == 1201) {
+      //   var res_file = segQueue[0];
+      //   for(var i=0; i< segQueue.length; i++) {
+      //     var res_file = concatenate(Uint8Array, res_file, segQueue[i]);
+      //   }
+      //   download(res_file, 'test_object.mp4', 'text/plain')
+      //   console.log("--||---||--||-",res_file)
+      // }
+      
+      remuxer.resetInitSegment();
+      videoSource.appendBuffer(concatenate(Uint8Array, segQueue.shift(), mp4frag.data1, mp4frag.data2));      
     }
     i++;
     if(i == clientQueueSize) {
       videoElement.play();          
-      timingCheckIntervalID = setInterval(timingCheck, 50);
+      timingCheckIntervalID = setInterval(timingCheck, 1000);
     }
   }
 }  
