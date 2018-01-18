@@ -20,17 +20,6 @@ func getMediaBase(mId int) string{
 }
 
 
-func serveHlsFile( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
-	//mediaFile := fmt.Sprint("%s/hls/%s",mediabase,segName)
-	//http.ServeFile(w,r,mediaFile)
-	name := fmt.Sprint("../../media/",counter)
-	counter++
-	http.ServeFile(w,r,name)
-	fmt.Println("%s",name)
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "video/MP2T")
-}
-
 
 func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName string) {
 	body  := <-Queue
@@ -42,18 +31,6 @@ func serveHlsQueue( w http.ResponseWriter, r *http.Request, mediabase, segName s
 	w.Write(body)
 }
 
-func streamHandlerFile(response http.ResponseWriter, request *http.Request) {
-	fmt.Println("streamHandler")
-	vars := mux.Vars(request)
-	mId, err := strconv.Atoi(vars["mId"])
-	if err != nil {
-		response.WriteHeader(http.StatusNotFound)
-		return
-	}
-	segName, _ := vars["segName"]
-	mediaBase := getMediaBase(mId)
-	serveHlsFile(response, request, mediaBase, segName)
-}
 
 func streamHandlerQueue(response http.ResponseWriter, request *http.Request) {
 	fmt.Println("streamHandler")
@@ -81,18 +58,6 @@ func RunServerQueue () {
 	http.Handle("/",Handlers())
 	http.ListenAndServe(":8000",nil)
 }
-
-
-// // Used to force main thread to go to sleep so we can handle when program stops running.
-//func main() {
-//	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
-//	//var tsSource Mpeg2TSSource = *NewMpeg2TSSource(8888, videoFrames)
-//	var uSource UdpSource = *NewUdpSource(100, videoFrames)
-//	fmt.Println("working on UDP");
-//	go uSource.FrameQueueFiller()
-//	go FrameQueueDispatcherFullFile(videoFrames)
-//	<-Done
-//}
 
 
 func main() {
