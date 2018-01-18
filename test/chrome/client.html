@@ -1263,7 +1263,7 @@ class MP4Remuxer {
         this.observer.trigger(Event.INIT_PTS_FOUND, { initPTS: initPTS});
       }
     }
-    console.log(Object.keys(tracks).length)
+    //console.log(Object.keys(tracks).length)
 
     if(Object.keys(tracks).length) {
       observer.trigger(Event.FRAG_PARSING_INIT_SEGMENT,data);
@@ -2932,6 +2932,10 @@ class TSDemuxer {
 //-------------------------------------------------------------------------------------------------------------
   var queue           = [];
   var segQueue        = [];
+  var staticWidth 
+  var staticHeight 
+  var staticSps
+  var staticPps
  //-------//
   var videoIP       = null;
   var videoPort       = -1;
@@ -2957,7 +2961,6 @@ class TSDemuxer {
   var mimeCodec       = 'video/mp4; codecs="avc1.4d401e"';
 
   initVideoConteiner();
- 
    videoIP     = document.getElementById('videoIP').value;
     videoPort     = parseInt(document.getElementById('videoPort').value);
     serverQueueSize = parseInt(document.getElementById('serverQueueSize').value);
@@ -2988,15 +2991,13 @@ class TSDemuxer {
     console.log("Invoking init ..."); 
     console.log("getUrl: " + baseUrl); 
     binaryClient   = new BinaryHttpClient();  
-    var retrieverID = setInterval(retrieveData, 40);        
+    var retrieverID = setInterval(retrieveData, 15);        
   };
 
       
   function startPlayback() {
     return videoElement.play();
   }
-
-
 ////-------------------------------------------------------------------------------------------------------------
 /////-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
@@ -3014,20 +3015,17 @@ logger.warn = logger.log = logger.error = function warn(input) {
   console.log(input)
 }
 _observer.trigger = function trigger(event, data) {
-    console.log("----------OBSERVER TRIGGERED!--------")
-    console.log("event:",event)
+    //console.log("----------OBSERVER TRIGGERED!--------")
+    //console.log("event:",event)
     //console.log("data",data)
     if(event == 'hlsFragParsingInitSegment') {
-      console.log("----Pushed initSegment into the segQueue ------",data.tracks.video.initSegment);
+      //console.log("----Pushed initSegment into the segQueue ------",data.tracks.video.initSegment);
       segQueue.push(data.tracks.video.initSegment)
       //videoSource.appendBuffer(data.tracks.video.initSegment);  
     }
     // console.trace()
   } 
-// var _observer = new EventEmitter();
-//   observer.trigger = function trigger (event, ...data) {
-//     observer.emit(event, event, ...data);
-// };
+
 
 var _typeSupported = {
   mpeg: true,
@@ -3068,7 +3066,7 @@ console.log("after init");
         videoSource.appendBuffer(initialization);
         // Wait for the update complete event before continuing
         videoSource.addEventListener("update",updateFunct, false);    
-        var buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 40);  
+        var buffersFromQueueIntervalID = setInterval(addBufferFromQueue, 15);  
         queue.push(byteArray); 
         return;   
       }
@@ -3090,7 +3088,7 @@ console.log("after init");
                   var pts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-16,-8)))
                   var dts         = byteArrayToLong(stringToArrayBuffer(anHttpRequest.responseText.slice(-8)))
 
-                  var frame = {data: arrayBuffer, pts: pts, dts: pts };
+                  var frame = {data: arrayBuffer, pts: pts*149, dts: pts*149 };
                   //console.log(frame)
                   aCallback(frame);
               } else {
@@ -3103,7 +3101,6 @@ console.log("after init");
            anHttpRequest.send( null );
       }
   }
-
 
 //--------------------------------------------------------------
 // HELPER FUNCTIONS
@@ -3155,11 +3152,9 @@ function download(text, name, type) {
   a.href = URL.createObjectURL(file);
   a.download = name;
 }
-
 //--------------------------------------------------------------
 // HELPER FUNCTIONS ----- END
 //--------------------------------------------------------------
-
 
   function updateFunct() {            
     bufferUpdated = true;
@@ -3168,59 +3163,22 @@ function download(text, name, type) {
 
   function initVideoConteiner(){
     console.log('Video conteiner init ...')
-
-
     videoElement = document.createElement("video");
     videoElement.id = 'myVideo';
     videoElement.autoPlay = true;
-    videoElement.setAttribute("controls","controls")  
-    
+    videoElement.setAttribute("controls","controls")    
     var videoContainer = document.getElementById('videoContainer');
     videoContainer.appendChild(videoElement);
-  
-    //mediaSource = new MediaSource();
-    //url = URL.createObjectURL(mediaSource);
     videoElement.pause();
-    //videoElement.src = url;
     videoElement.width = 720;
     videoElement.height = 576;
 
     console.log('Video conteiner initialized!')
   }
 
-
   function timingCheck() {
-    
-    /*if(lastMessageTime != -1) {
-      console.log("lastMessageTime: " + lastMessageTime);
-      var diff = new Date().getTime() - lastMessageTime;
-      console.log("diff: " + diff);
-      if (diff > lastMessageTimeout) {
-        lastMessageTime = -1; //new Date().getTime();
-        console.log("diff > lastMessageTimeout");
-        return;
-      }
-    }
-          
-    
-    if(previousTime == -1) {
-      console.log("previousTime = -1: " + previousTime);
-      previousTime = videoElement.currentTime;
-      console.log("new previousTime: " + previousTime);
-    }
-    else {
-      console.log("previousTime: " + previousTime);
-      if((videoElement.currentTime - previousTime) < 0.1) {
-        console.log("(videoElement.currentTime - previousTime) = " + (videoElement.currentTime - previousTime));  
-        videoElement.currentTime = videoElement.seekable.end(0) - liveOffset;
-        previousTime = -1;
-      }
-    } */
-    
     var diff = videoElement.seekable.end(0) - videoElement.currentTime;
-
     console.log("diff: " + diff);
-
     if ((diff < upperLimit) || (diff > lowerLimit)) {
       videoElement.currentTime = videoElement.seekable.end(0) - liveOffset;
       videoElement.play();
@@ -3229,10 +3187,6 @@ function download(text, name, type) {
       console.log("esle diff < upperLimit) || (diff > lowerLimit");
     }
   }
-var staticWidth 
-var staticHeight 
-var staticSps
-var staticPps
 
 function createAVCSample (key,pts,dts,debug) {
           return { key : key, pts : pts, dts : dts, units : [], debug : debug};
@@ -3432,13 +3386,11 @@ function addBufferFromQueue() {
          staticWidth = config.width;
          staticHeight = config.height;
          staticSps = [units[i].data] 
-         console.log("config:", config)
-         //console.log("sps:", [units[i].data] )
+         //console.log("config:", config)
        }
        if (units[i].type === 8) {
           staticPps = [units[i].data];
           track.pps = [units[i].data];
-          //console.log('pps', track.pps)
        }
     }     
     if (staticPps) {
@@ -3459,11 +3411,10 @@ function addBufferFromQueue() {
       sample.pts = bufFromQueue.pts 
       sample.dts = bufFromQueue.dts 
       track.samples = [sample]
-      // remux() parameter list for reference: remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous,accurateTimeOffset) 
       mp4frag = remuxer.remux(demuxerTS._audioTrack,track,demuxerTS._id3Track,demuxerTS._txtTrack, 0, 0, 0);
+
+      // -----This code is for downloading the movie as a file-------
       //console.log(mp4frag)
-
-
       // segQueue.push(mp4frag.data1)//moof
       // segQueue.push(mp4frag.data2)//mdat
       // if (segQueue.length  == 1201) {
@@ -3473,10 +3424,16 @@ function addBufferFromQueue() {
       //   }
       //   download(res_file, 'test_object.mp4', 'text/plain')
       //   console.log("--||---||--||-",res_file)
-      // }
+      // }   
       
-      remuxer.resetInitSegment();
-      videoSource.appendBuffer(concatenate(Uint8Array, segQueue.shift(), mp4frag.data1, mp4frag.data2));      
+      if (first) {
+        first = false;
+        //remuxer.resetInitSegment();
+        videoSource.appendBuffer(concatenate(Uint8Array, segQueue.shift(), mp4frag.data1, mp4frag.data2));
+      }else  {
+        videoSource.appendBuffer(concatenate(Uint8Array, mp4frag.data1, mp4frag.data2)); 
+      }
+     
     }
     i++;
     if(i == clientQueueSize) {
@@ -3485,6 +3442,7 @@ function addBufferFromQueue() {
     }
   }
 }  
+var first = true
 
 </script>
 </body>
