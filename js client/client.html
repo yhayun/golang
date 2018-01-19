@@ -2942,23 +2942,27 @@ class TSDemuxer {
   var serverQueueSize   = -1;
   var videoSource       = null;
   var sessionId         = null;
-  var baseUrl = "http://localhost:8000/media/stream/test/1";
+  // var baseUrl = "http://localhost:8000/media/stream/test/1";
   var videoElement      = document.getElementById("myVideo");
   var initFlag        = false;
   var initialization    = null;
   var bufferUpdated     = false;
-  var getUrl          = "http://localhost:8000/media/stream/test/1";
+  var urlPort			= "8000"
+  var urlIP				= "127.0.0.1"
+  // var getUrl          = "http://localhost:8000/media/stream/test/1";
+  http://8000:127.0.0.1/media/stream/test/1
+  var getUrl          	= "http://"+urlIP+":"+urlPort+"/media/stream/test/1";
   var binaryClient      = null; 
   var mediaSource       = null;
-  var i             = 0;
+  var i             	= 0;
   var lastMessageTime   = -1;
   var lastMessageTimeout  = 3000;
-  var previousTime    = -1;
+  var previousTime    	= -1;
   var clientQueueSize   = -1;
-  var upperLimit      = -1;
-  var liveOffset      = -1;
-  var lowerLimit      = -1;   
-  var mimeCodec       = 'video/mp4; codecs="avc1.4d401e"';
+  var upperLimit      	= -1;
+  var liveOffset      	= -1;
+  var lowerLimit      	= -1;   
+  var mimeCodec       	= 'video/mp4; codecs="avc1.4d401e"';
 
   initVideoConteiner();
    videoIP     = document.getElementById('videoIP').value;
@@ -2989,7 +2993,7 @@ class TSDemuxer {
     videoSource = mediaSource.addSourceBuffer(mimeCodec);
     var xmlhttp = new XMLHttpRequest();
     console.log("Invoking init ..."); 
-    console.log("getUrl: " + baseUrl); 
+    console.log("getUrl: " + getUrl)
     binaryClient   = new BinaryHttpClient();  
     var retrieverID = setInterval(retrieveData, 15);        
   };
