@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 	"encoding/binary"
+	"os"
 )
 
 var Done = make(chan bool)
@@ -62,7 +63,13 @@ func RunServerQueue () {
 
 func main() {
 	var videoFrames frameQueue = *NewFrameQueue(100,FRAME_SIZE)
-	var uSource UdpSource = *NewUdpSource(100, videoFrames)
+	var uSource UdpSource
+	if (len(os.Args) > 1) {
+		uSource = *NewUdpSource(os.Args[2], videoFrames)
+	} else {
+		uSource = *NewUdpSource(8888, videoFrames)
+	}
+
 	fmt.Println("working on UDP");
 	go uSource.FrameQueueFiller()
 	go FinalQueueFilller(videoFrames)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"io/ioutil"
+	"strconv"
 )
 const UDP_SIZE = 1500
 const FRAME_SIZE = 300000; // 300KB
@@ -150,12 +151,12 @@ func (u* UdpSource) FrameQueueFiller() {
 }
 
 
-func NewMpeg2TSSource(port int,queue frameQueue) *Mpeg2TSSource {
-	addr, _ := net.ResolveUDPAddr("udp", ":8888")
+func NewMpeg2TSSource(port string ,queue frameQueue) *Mpeg2TSSource {
+	addr, _ := net.ResolveUDPAddr("udp", ":"+ port)
 	sock, _ := net.ListenUDP("udp", addr)
 	return &Mpeg2TSSource{queue, 0, *sock}
 }
-func NewUdpSource(port int,queue frameQueue) * UdpSource{
+func NewUdpSource(port string,queue frameQueue) * UdpSource{
 	return &UdpSource{
 		*NewMpeg2TSSource(port,queue),
 		false,
