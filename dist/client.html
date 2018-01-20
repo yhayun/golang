@@ -2947,7 +2947,6 @@ class TSDemuxer {
   var urlPort			= "8000"
   var urlIP				= "127.0.0.1"
   // var getUrl          = "http://localhost:8000/media/stream/test/1";
-  http://8000:127.0.0.1/media/stream/test/1
   var getUrl          	= "http://"+urlIP+":"+urlPort+"/media/stream/test/1";
   var binaryClient      = null; 
   var mediaSource       = null;
@@ -2962,17 +2961,23 @@ class TSDemuxer {
   var mimeCodec       	= 'video/mp4; codecs="avc1.4d401e"';
 
   initVideoConteiner();
-   videoIP     = document.getElementById('videoIP').value;
+  initUserInput();
+  
+  function initUserInput() {
+    videoIP     = document.getElementById('videoIP').value;
     videoPort     = parseInt(document.getElementById('videoPort').value);
     serverQueueSize = parseInt(document.getElementById('serverQueueSize').value);
     clientQueueSize = parseInt(document.getElementById('clientQueueSize').value);
     upperLimit    = parseFloat(document.getElementById('upperLimit').value);
     liveOffset    = parseFloat(document.getElementById('liveOffset').value);
     lowerLimit    = parseFloat(document.getElementById('lowerLimit').value);      
-
+  }
 
     function start() {
     console.log('Start invoked!')
+    initUserInput();
+    getUrl = "http://"+videoIP+":"+videoPort+"/media/stream/test/1";
+    console.log("URL:", getUrl)
     if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
       console.log('Preparing mediaSource ...!')
       mediaSource = new MediaSource;
