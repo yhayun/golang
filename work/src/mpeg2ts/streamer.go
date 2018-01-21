@@ -67,7 +67,7 @@ func main() {
 	if (len(os.Args) > 1) {
 		uSource = *NewUdpSource(os.Args[2], videoFrames)
 	} else {
-		uSource = *NewUdpSource(8888, videoFrames)
+		uSource = *NewUdpSource("8888", videoFrames)
 	}
 
 	fmt.Println("working on UDP");
